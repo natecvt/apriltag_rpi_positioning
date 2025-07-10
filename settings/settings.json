@@ -1,0 +1,27 @@
+[
+
+    {
+        "settings" : "images",
+        "values" : [
+            {"width" : 640},
+            {"height" : 640},
+            {"aspectratio" : [1 , 1]},
+            {"framerate" : 100},
+            {"stride": 1}
+        ]
+    }, 
+
+    {
+        "settings" : "apriltags",
+        "values" : [
+            {"quiet" : true},
+            {"iterations" : 4},
+            {"hamming" : 4},
+            {"threads" : 1},
+            {"dec": 1.5},
+            {"blur": 0.0},
+            {"refine": true},
+            {"tagfamily": 1}
+        ]
+    }
+]
