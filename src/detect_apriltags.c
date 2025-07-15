@@ -1,6 +1,6 @@
 #include <detect_apriltags.h>
 
-int setup(apriltag_detector_t *td, apriltag_family_t *tf, apriltag_settings *ts,
+int dsetup(apriltag_detector_t *td, apriltag_family_t *tf, apriltag_settings *ts,
     uint8_t tag, 
     bool debug,
     bool quiet,
@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
     uint8_t ec;
 
     // #TODO: add method to read these in from file
-    ec = setup(td, tf, ts, 1, true, true, 2, 8, 2, 2.0f, 0.0f, true);
+    ec = dsetup(td, tf, ts, 1, true, true, 2, 8, 2, 2.0f, 0.0f, true);
     if (ec) {
         printf("Setup returned error code: %d", ec);
     }

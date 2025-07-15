@@ -1,3 +1,4 @@
-/bin/*
-/output/*
+/bin/**
+/output/**
+/build/**
 .vscode
