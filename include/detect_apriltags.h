@@ -26,15 +26,5 @@ typedef struct _apriltag_settings {
     uint8_t iters;
 } apriltag_settings;
 
-enum tagTypes {
-    TAG36H10 = 0,
-    TAG36H11 = 1,
-    TAG25H9 = 2,
-    TAG16H5 = 3,
-    TAG27H7R = 4,
-    TAG49H12R = 5,
-    TAG41H12S = 6,
-    TAG52H13S = 7,
-    TAG48H12C = 8
-};
+
 

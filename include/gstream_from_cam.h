@@ -1,19 +1,27 @@
+#ifndef GSTREAM_FROM_CAM_H
+#define GSTREAM_FROM_CAM_H
+
+#include <settings.h>
+
 #include <gst/gst.h>
 #include <gst/app/gstappsink.h>
-#include <stdio.h>
 
 // a type to contain all relevant gstreamer and image parameters
-typedef struct _CustomData {
+typedef struct _StreamSet {
     GstElement *pipeline;
     GstElement *source;
     GstElement *convert;
     GstElement *caps1;
     GstElement *sink;
+} StreamSet;
 
-    // #TODO: implement aspect ratio control, should always be 16x9
-    u_int16_t iw; // output image width
-    u_int16_t ih; // output image height
-    u_int8_t fr; // capture framerate
-    u_int32_t np; // number of pixels in output image
-    u_int8_t stride; // number of bytes per pixel, 1 or 2 for grayscale
-} CustomData;
+// function declarations, #TODO: document these
+int gstream_setup(StreamSet *cd, Settings *settings, uint8_t emit_signals, uint8_t sync);
+
+int gstream_pull_sample(StreamSet *ss, u_int16_t data[]);
+
+int print_bus_message(GstBus *bus, StreamSet *ss);
+
+int gstream_cleanup(GstBus *bus, StreamSet *ss);
+
+#endif

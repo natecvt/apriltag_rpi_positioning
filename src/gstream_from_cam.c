@@ -1,32 +1,25 @@
 #include <gstream_from_cam.h>
 
-int setup(CustomData *cd, u_int8_t es, u_int8_t sy, u_int16_t width, u_int16_t height, u_int8_t fr) {
+int gstream_setup(StreamSet *ss, Settings *settings, uint8_t emit_signals, uint8_t sync) {
 
     // create the pipeline and elements to add to it
-    cd->pipeline = gst_pipeline_new("pipeline");
+    ss->pipeline = gst_pipeline_new("pipeline");
 
-    cd->source = gst_element_factory_make("libcamerasrc", "source");
-    cd->convert = gst_element_factory_make("videoconvert", "convert");
-    cd->caps1 = gst_element_factory_make("capsfilter", "caps1");
-    cd->sink = gst_element_factory_make("appsink", "sink");
-
-    // add properties to data structure
-    cd->iw = width;
-    cd->ih = height;
-    cd->fr = fr;
-    cd->np = width * height;
-    cd->stride = 2;
+    ss->source = gst_element_factory_make("libcamerasrc", "source");
+    ss->convert = gst_element_factory_make("videoconvert", "convert");
+    ss->caps1 = gst_element_factory_make("capsfilter", "caps1");
+    ss->sink = gst_element_factory_make("appsink", "sink");
 
     // check if things were created correctly
-    if (!cd->pipeline || !cd->source || !cd->caps1 || !cd->convert || !cd->sink) {
+    if (!ss->pipeline || !ss->source || !ss->caps1 || !ss->convert || !ss->sink) {
         g_printerr("Not all elements could be created.\n");
         return 1;
     }
 
     // set data to objects, customize filters
-    g_object_set(cd->sink,
-        "emit-signals", es, 
-        "sync", sy, 
+    g_object_set(ss->sink,
+        "emit-signals", emit_signals, 
+        "sync", sync, 
         NULL);
     
     // caps filter for setting the output image parameters 
@@ -34,29 +27,53 @@ int setup(CustomData *cd, u_int8_t es, u_int8_t sy, u_int16_t width, u_int16_t h
     GstCaps *caps = gst_caps_new_simple(
         "video/x-raw",
         "format", G_TYPE_STRING, "GRAY16_LE",
-        "width", G_TYPE_INT, cd->iw,
-        "height", G_TYPE_INT, cd->ih,
-        "framerate", GST_TYPE_FRACTION, cd->fr, 1,
+        "width", G_TYPE_INT, settings->width,
+        "height", G_TYPE_INT, settings->height,
+        "framerate", GST_TYPE_FRACTION, settings->framerate, 1,
         NULL);
 
-    g_object_set(cd->caps1, "caps", caps, NULL);
+    g_object_set(ss->caps1, "caps", caps, NULL);
     gst_caps_unref(caps); // have to unref objects
 
     // add and link everything to the pipeline
-    gst_bin_add_many(GST_BIN (cd->pipeline), cd->source, cd->convert, cd->caps1, cd->sink, NULL);
-    if (!gst_element_link_many(cd->source, cd->convert, cd->caps1, cd->sink, NULL)) {
+    gst_bin_add_many(GST_BIN (ss->pipeline), ss->source, ss->convert, ss->caps1, ss->sink, NULL);
+    if (!gst_element_link_many(ss->source, ss->convert, ss->caps1, ss->sink, NULL)) {
         g_printerr("Elements could not be linked.\n");
-        gst_object_unref(cd->pipeline);
+        gst_object_unref(ss->pipeline);
         return 2;
     }
 
     // set the state to playing once everything is properly set up
-    if (cd->pipeline->current_state != GST_STATE_PLAYING) gst_element_set_state(cd->pipeline, GST_STATE_PLAYING);
+    if (ss->pipeline->current_state != GST_STATE_PLAYING) gst_element_set_state(ss->pipeline, GST_STATE_PLAYING);
 
     return 0;
 }
 
-int print_bus_message(GstBus *bus, CustomData *cd) {
+int gstream_pull_sample(StreamSet *ss, u_int16_t data[]) {
+    // pull the sample
+    GstSample *sample = gst_app_sink_pull_sample(GST_APP_SINK(ss->sink));
+    
+    // don't continue if sample is not found
+    if (!sample) return 1;
+
+    // load a buffer and a map for sample
+    GstBuffer *buffer = gst_sample_get_buffer(sample);
+    GstMapInfo map;
+
+    // if the buffer can be read, copy the map data to an external array
+    if (gst_buffer_map(buffer, &map, GST_MAP_READ)) {
+        // printf("Frame: %d bytes\n", map.size);
+        memcpy(data, map.data, map.size);
+
+        gst_buffer_unmap(buffer, &map);
+    }
+
+    gst_sample_unref(sample);
+
+    return 0;
+}
+
+int print_bus_message(GstBus *bus, StreamSet *ss) {
     // get newest message
     GstMessage *msg = gst_bus_timed_pop_filtered (bus, GST_CLOCK_TIME_NONE,
         GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
@@ -84,7 +101,7 @@ int print_bus_message(GstBus *bus, CustomData *cd) {
                 return 2;
             case GST_MESSAGE_STATE_CHANGED:
                 // reading state changes from the pipeline
-                if (GST_MESSAGE_SRC (msg) == GST_OBJECT (cd->pipeline)) {
+                if (GST_MESSAGE_SRC (msg) == GST_OBJECT (ss->pipeline)) {
                     GstState old_state, new_state, pending_state;
                     gst_message_parse_state_changed (msg, &old_state, &new_state, &pending_state);
                     g_print ("Pipeline state changed from %s to %s:\n",
@@ -104,101 +121,15 @@ int print_bus_message(GstBus *bus, CustomData *cd) {
     return 0;
 }
 
-int cleanup(GstBus *bus, CustomData *cd) {
+int gstream_cleanup(GstBus *bus, StreamSet *ss) {
     // unrefs objects passed by reference
 
     if (bus != NULL) {
         gst_object_unref(bus);
     }
-    if (cd != NULL) {
-        gst_element_set_state(cd->pipeline, GST_STATE_NULL);
-        gst_object_unref(cd->pipeline);
+    if (ss != NULL) {
+        gst_element_set_state(ss->pipeline, GST_STATE_NULL);
+        gst_object_unref(ss->pipeline);
     }
     return 0;
-}
-
-int pull_sample(CustomData *cd, u_int16_t data[]) {
-    // pull the sample
-    GstSample *sample = gst_app_sink_pull_sample(GST_APP_SINK(cd->sink));
-    
-    // don't continue if sample is not found
-    if (!sample) return 1;
-
-    // load a buffer and a map for sample
-    GstBuffer *buffer = gst_sample_get_buffer(sample);
-    GstMapInfo map;
-
-    // if the buffer can be read, copy the map data to an external array
-    if (gst_buffer_map(buffer, &map, GST_MAP_READ)) {
-        // printf("Frame: %d bytes\n", map.size);
-        memcpy(data, map.data, map.size);
-
-        gst_buffer_unmap(buffer, &map);
-    }
-
-    gst_sample_unref(sample);
-
-    return 0;
-}
-
-int main(int argc, char *argv[]) {
-    // initialization, #TODO add method to read debug mode
-    setenv("GST_DEBUG", "3", 1);
-    gst_init(&argc, &argv);
-
-    // declaring the data used for the rest of this file
-    CustomData cd;
-    u_int8_t ec;
-
-    // perform setup, check error output
-    // #TODO add method to read in these inputs from config
-    // #TODO add way to modulate framerate based on max framerate per image size
-    ec = setup(&cd, FALSE, FALSE, 640, 480, 30);
-    if (ec) {
-        g_printerr("Setup returned error code: %d", ec);
-        exit(1);
-    }
-
-    // set up bus
-    GstBus *bus = gst_element_get_bus(cd.pipeline);
-
-    // #TODO: add a way to account for different formats
-    u_int16_t *data;
-
-    data = (u_int16_t*)malloc(cd.np * cd.stride);
-    if (data == NULL) {
-        perror("Image data allocation failed");
-        exit(2);
-    }
-
-    // pulling sample from camera and print bus error message, the only functions used in a loop
-    ec = pull_sample(&cd, data);
-    if (ec) {
-        g_printerr("Sampling returned error code: %d", ec);
-        // do not exit, run something to fix the break in timing
-    }
-
-    ec = print_bus_message(bus, &cd);
-    if (ec) {
-        g_printerr("Bus returned error code: %d", ec);
-        exit(3);
-    }
-
-    // write image to file, for debugging
-    // FILE *f;
-    // f = fopen("output/img.csv", "w");
-    // for (int j = cd.np - 1; j > 0; j--) {
-    //     fprintf(f, "%d,", data[j]);
-    // }
-
-    ec = cleanup(bus, &cd);
-    if (ec) {
-        g_printerr("Cleanup returned error code: %d", ec);
-        exit(4);
-    }
-    
-    // free dynamically allocated image data array
-    free(data);
-
-    exit(0);
 }

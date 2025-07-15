@@ -1,21 +1,28 @@
+#ifndef SETTINGS_H
+#define SETTINGS_H
+
 #include <json-c/json.h>
 // #TODO: find specific .h files to include, not one for everything
 #include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
 
+// #TODO: implement auto-pathing, when path not given
 #define PATH "settings/"
 
 typedef struct _Settings {
     // images
-    uint16_t iw; // output image width
-    uint16_t ih; // output image height
-    uint8_t ar[2]; // aspect ratio of output image, make [16, 9] to minimize image clipping, make [1, 1] for square image
-    uint8_t fr; // capture framerate
+    uint16_t width; // output image width
+    uint16_t height; // output image height
+    uint8_t is_height_from_ar; // whether height is computed from AR or just given
+    uint8_t aspectratio[2]; // aspect ratio of output image, make [16, 9] to minimize image clipping, make [1, 1] for square image
+    uint8_t framerate; // capture framerate
     uint32_t np; // number of pixels in output image
     uint8_t stride; // number of bytes per pixel, 1 or 2 for grayscale
 
     // apriltags
     uint8_t quiet; // quiet debugging
-    uint8_t iters; // number of iterations to run on detection
+    uint8_t iterations; // number of iterations to run on detection
 
     uint8_t hamming; // number of bit errors per detection
     uint8_t threads; // number of threads to use, make 1 usually
@@ -23,5 +30,21 @@ typedef struct _Settings {
     float blur; // blurring factor, 0.0 does nothing, >0.0 blurs, <0.0 sharpens
     uint8_t refine; // boolean for if refining
 
-    uint8_t tagfam; // tag family, refer to tagTypes enum in detect_apriltags.h
+    uint8_t tag_family; // tag family, refer to tagTypes enum
 } Settings;
+
+enum tagTypes {
+    TAG36H10 = 0,
+    TAG36H11 = 1,
+    TAG25H9 = 2,
+    TAG16H5 = 3,
+    TAG27H7R = 4,
+    TAG49H12R = 5,
+    TAG41H12S = 6,
+    TAG52H13S = 7,
+    TAG48H12C = 8
+};
+
+int load_settings_from_path(const char* path, Settings *settings);
+
+#endif
