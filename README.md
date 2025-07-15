@@ -16,3 +16,6 @@ There will be 5 parts to this program:
 - (-) A main program that manages all of the above
 
 Functions will return error codes starting from zero for debugging
+
+current compile command:
+gcc -o bin/detect `pkg-config --cflags --libs apriltag gstreamer-1.0 gstreamer-app-1.0` -Iinclude -I/usr/include/apriltag/common -c src/detect_apriltags.c

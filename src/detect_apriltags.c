@@ -84,7 +84,7 @@ int detect_from_image(apriltag_detector_t *td, apriltag_family_t *tf, apriltag_s
 
         double t_time = 0;
 
-        im = image_u8_create((unsigned int)cd->iw, (unsigned int)cd->ih);
+        im = image_u8_create(cd->iw, cd->ih);
 
         if (cd->stride == 2) {
             for (int j = 0; j < cd->np; j = j++) {
