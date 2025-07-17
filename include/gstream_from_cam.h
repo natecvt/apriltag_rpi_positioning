@@ -10,15 +10,15 @@
 typedef struct _StreamSet {
     GstElement *pipeline;
     GstElement *source;
+    GstElement *queue;
     GstElement *convert;
-    GstElement *caps1;
     GstElement *sink;
 } StreamSet;
 
 // function declarations, #TODO: document these
 int gstream_setup(StreamSet *cd, Settings *settings, uint8_t emit_signals, uint8_t sync);
 
-int gstream_pull_sample(StreamSet *ss, u_int16_t data[]);
+int gstream_pull_sample(StreamSet *ss, uint8_t *data, Settings *settings);
 
 int print_bus_message(GstBus *bus, StreamSet *ss);
 

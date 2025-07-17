@@ -1,6 +1,6 @@
 #include <settings.h>
 #include <gstream_from_cam.h>
-//#include <detect_apriltags.h>
+#include <detect_apriltags.h>
 //#include <transmit_pose.h>
 
 int main(int argc, char *argv[]) {
@@ -9,14 +9,19 @@ int main(int argc, char *argv[]) {
 
     Settings settings;
     StreamSet streams;
-    u_int8_t ec;
+    int ec;
     GstBus *bus;
-    u_int16_t *data;
+    GstState *state1, *state2;
+    uint8_t *data;
+
+    zarray_t *det;
+    apriltag_detector_t *td;
+    apriltag_family_t *tf;
 
     // read in settings from json file, #TODO: make the path an arg (using stropts?)
     ec = load_settings_from_path("/home/natec/apriltag_rpi_positioning/settings/settings.json", &settings);
     if(ec) {
-        printf("Settings failed to load with error code: %d", ec);
+        printf("Settings failed to load with error code: %d\n", ec);
         exit(1);
     }
     settings.np = settings.width * settings.height;
@@ -24,7 +29,7 @@ int main(int argc, char *argv[]) {
     // perform setup, check error output
     ec = gstream_setup(&streams, &settings, FALSE, FALSE);
     if (ec) {
-        g_printerr("Setup returned error code: %d", ec);
+        g_printerr("Setup returned error code: %d\n", ec);
         exit(1);
     }
 
@@ -33,33 +38,40 @@ int main(int argc, char *argv[]) {
     // allocating data 
     data = malloc(settings.np * settings.stride);
     if (data == NULL) {
-        perror("Image data allocation failed");
+        perror("Image data allocation failed\n");
         exit(2);
     }
 
-    // while(TRUE) {
-    // pulling sample from camera and print bus error message, the only gstream functions used in a loop
-    ec = gstream_pull_sample(&streams, data);
+    // perform apriltag setup
+    ec = apriltag_setup(&td, &tf, &settings);
     if (ec) {
-        g_printerr("Sampling returned error code: %d", ec);
-        // do not exit, run something to fix the break in timing
-    }
-    // print messages tied to the bus, after every loop
-    ec = print_bus_message(bus, &streams);
-    if (ec) {
-        g_printerr("Bus returned error code: %d", ec);
-        exit(3);
+        printf("Setup returned error code: %d\n", ec);
     }
 
-    // put image processing and data transmission functions below \/
+    while(TRUE) {
+        // pulling sample from camera and print bus error message, the only gstream functions used in a loop
+        ec = gstream_pull_sample(&streams, data, &settings);
+        if (ec) {
+            continue;
+            // do not exit, run something to fix the break in timing
+        }
 
-    // }
+        // put image processing and data transmission functions below \/
+        ec = apriltag_detect(&td, &tf, &det, data, &settings);
+        if (ec) {
+            printf("Apriltag detection returned error code: %d\n", ec);
+            // do not exit, perform error handling based on what happened
+        }
+    }
 
+    // gstreamer cleanup
     ec = gstream_cleanup(bus, &streams);
     if (ec) {
-        g_printerr("Cleanup returned error code: %d", ec);
+        g_printerr("Cleanup returned error code: %d\n", ec);
         exit(4);
     }
+    // apriltag cleanup
+    apriltag_cleanup(&td, &tf, &det);
     
     // free dynamically allocated image data array
     free(data);

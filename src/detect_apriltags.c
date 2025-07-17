@@ -1,52 +1,45 @@
 #include <detect_apriltags.h>
 
-int dsetup(apriltag_detector_t *td, apriltag_family_t *tf, apriltag_settings *ts,
-    uint8_t tag, 
-    bool debug,
-    bool quiet,
-    uint8_t hamming, 
-    uint8_t iters, 
-    uint8_t threads, 
-    float dec, 
-    float blur,
-    bool refine) 
-{
-    td = apriltag_detector_create();
+// #TODO: create macros that help with different image bit depths/strides
 
-    switch(tag) {
+int apriltag_setup(apriltag_detector_t **td, apriltag_family_t **tf, Settings *settings) 
+{
+    *td = apriltag_detector_create();
+
+    switch(settings->tag_family) {
         case TAG36H10:
-            tf = tag36h10_create();
+            *tf = tag36h10_create();
             break;
         case TAG36H11:
-            tf = tag36h11_create();
+            *tf = tag36h11_create();
             break;
         case TAG25H9:
-            tf = tag25h9_create();
+            *tf = tag25h9_create();
             break;
         case TAG16H5:
-            tf = tag16h5_create();
+            *tf = tag16h5_create();
             break;
         case TAG27H7R:
-            tf = tagCircle21h7_create();
+            *tf = tagCircle21h7_create();
             break;
         case TAG49H12R:
-            tf = tagCircle49h12_create();
+            *tf = tagCircle49h12_create();
             break;
         case TAG41H12S:
-            tf = tagStandard41h12_create();
+            *tf = tagStandard41h12_create();
             break;
         case TAG52H13S:
-            tf = tagStandard52h13_create();
+            *tf = tagStandard52h13_create();
             break;
         case TAG48H12C:
-            tf = tagCustom48h12_create();
+            *tf = tagCustom48h12_create();
             break;
         default:
-            printf("Unknown tag type entered: %d", tag);
+            printf("Unknown tag type entered: %d", settings->tag_family);
             return 1;
     }
 
-    apriltag_detector_add_family_bits(td, tf, hamming);
+    apriltag_detector_add_family_bits(*td, *tf, settings->hamming);
 
     switch(errno){
         case EINVAL:
@@ -57,87 +50,71 @@ int dsetup(apriltag_detector_t *td, apriltag_family_t *tf, apriltag_settings *ts
             exit(-1);
     }
 
-    td->debug = debug;
-    td->nthreads = threads;
-    td->quad_decimate = dec;
-    td->quad_sigma = blur;
-    td->refine_edges = refine;
-
-    ts->quiet = quiet;
-    ts->iters = iters;
+    (*td)->debug = settings->debug;
+    (*td)->nthreads = settings->threads;
+    (*td)->quad_decimate = settings->dec;
+    (*td)->quad_sigma = settings->blur;
+    (*td)->refine_edges = settings->refine;
 
     return 0;
 }
 
-int detect_from_image(apriltag_detector_t *td, apriltag_family_t *tf, apriltag_settings *ts, zarray_t *det, uint16_t *imdata, CustomData *cd) {
+int apriltag_detect(apriltag_detector_t **td, apriltag_family_t **tf, zarray_t **det, uint8_t *imdata, Settings *settings) {
     // loop through iterations
     image_u8_t *im = NULL;
 
-    for (int i = 0; i < ts->iters; i++) {
-        
+    for (uint8_t i = 0; i < settings->iterations; i++) {
         int total_quads = 0;
-        int total_hamm_hist[HAMM_HIST_MAX];
-        memset(total_hamm_hist, 0, sizeof(int) * HAMM_HIST_MAX);
+        double total_time = 0;
 
-        int hamm_hist[HAMM_HIST_MAX];
-        memset(hamm_hist, 0, sizeof(hamm_hist));
-
-        double t_time = 0;
-
-        im = image_u8_create(cd->iw, cd->ih);
-
-        if (cd->stride == 2) {
-            for (int j = 0; j < cd->np; j = j++) {
-                im->buf[j] = imdata[j * cd->stride] >> 8;
-            }
-        }
-        else {
-            memcpy(im->buf, imdata, cd->np);
+        im = image_u8_create(settings->width, settings->height);
+        
+        for (int i = 0; i < settings->height; i++) {
+            uint8_t* row_d = im->buf + i * im->stride;
+            uint8_t* row_s = imdata + i * settings->width;
+            memcpy(row_d, row_s, settings->width);
         }
 
-        if (td->debug) {
-            image_u8_write_pnm(im, "output/debug_invariant.pnm");
+        if ((*td)->debug) {
+            image_u8_write_pnm(im, "/home/natec/apriltag_rpi_positioning/output/debug.pgm");
         }
 
-        zarray_t *det = apriltag_detector_detect(td, im);
+        *det = apriltag_detector_detect(*td, im);
 
         if (errno == EAGAIN) {
-            printf("Unable to create the %d threads requested.\n",td->nthreads);
-            exit(-1);
+            printf("Unable to create the %d threads requested.\n",(*td)->nthreads);
+            return 2;
         }
 
-        for (int i = 0; i < zarray_size(det); i++) {
+        for (int i = 0; i < zarray_size(*det); i++) {
             apriltag_detection_t *d;
-            zarray_get(det, i, &d);
+            zarray_get(*det, i, &d);
 
-            if (!ts->quiet)
+            if (!settings->quiet)
                 printf("detection %3d: id (%2dx%2d)-%-4d, hamming %d, margin %8.3f\n",
                         i, d->family->nbits, d->family->h, d->id, d->hamming, d->decision_margin);
 
-            hamm_hist[d->hamming]++;
-            total_hamm_hist[d->hamming]++;
-
             
         }
+
+        if (!settings->quiet) {
+                timeprofile_display((*td)->tp);
+        }
+
+        double t = timeprofile_total_utime((*td)->tp) / 1.0E3;
+        total_time += t;
+        printf("Time: %12.3f \n", t);
+
+        image_u8_destroy(im);
     }
+
+    return 0;
 }
 
-int main(int argc, char *argv[]) {
-    zarray_t *za;
+int apriltag_cleanup(apriltag_detector_t **td, apriltag_family_t **tf, zarray_t **det) {
+    apriltag_detections_destroy(*det);
+    tagStandard41h12_destroy(*tf);
+    apriltag_detector_destroy(*td);
 
-    apriltag_detector_t *td;
-    apriltag_family_t *tf;
-    apriltag_settings *ts;
-    uint8_t ec;
-
-    // #TODO: add method to read these in from file
-    ec = dsetup(td, tf, ts, 1, true, true, 2, 8, 2, 2.0f, 0.0f, true);
-    if (ec) {
-        printf("Setup returned error code: %d", ec);
-    }
-
-    ec = detect_from_image(td, tf, ts, za, NULL, NULL);
-    if (ec) {
-        printf("Loop returned error code: %d", ec);
-    }
+    return 0;
 }

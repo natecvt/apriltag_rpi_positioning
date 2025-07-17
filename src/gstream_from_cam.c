@@ -6,12 +6,12 @@ int gstream_setup(StreamSet *ss, Settings *settings, uint8_t emit_signals, uint8
     ss->pipeline = gst_pipeline_new("pipeline");
 
     ss->source = gst_element_factory_make("libcamerasrc", "source");
+    ss->queue = gst_element_factory_make("queue", "queue");
     ss->convert = gst_element_factory_make("videoconvert", "convert");
-    ss->caps1 = gst_element_factory_make("capsfilter", "caps1");
     ss->sink = gst_element_factory_make("appsink", "sink");
 
     // check if things were created correctly
-    if (!ss->pipeline || !ss->source || !ss->caps1 || !ss->convert || !ss->sink) {
+    if (!ss->pipeline || !ss->queue || !ss->source || !ss->convert || !ss->sink) {
         g_printerr("Not all elements could be created.\n");
         return 1;
     }
@@ -26,18 +26,18 @@ int gstream_setup(StreamSet *ss, Settings *settings, uint8_t emit_signals, uint8
     // #TODO: add format options
     GstCaps *caps = gst_caps_new_simple(
         "video/x-raw",
-        "format", G_TYPE_STRING, "GRAY16_LE",
+        "format", G_TYPE_STRING, "GRAY8",
         "width", G_TYPE_INT, settings->width,
         "height", G_TYPE_INT, settings->height,
         "framerate", GST_TYPE_FRACTION, settings->framerate, 1,
         NULL);
 
-    g_object_set(ss->caps1, "caps", caps, NULL);
+    gst_app_sink_set_caps(GST_APP_SINK(ss->sink), caps);
     gst_caps_unref(caps); // have to unref objects
 
     // add and link everything to the pipeline
-    gst_bin_add_many(GST_BIN (ss->pipeline), ss->source, ss->convert, ss->caps1, ss->sink, NULL);
-    if (!gst_element_link_many(ss->source, ss->convert, ss->caps1, ss->sink, NULL)) {
+    gst_bin_add_many(GST_BIN (ss->pipeline), ss->source, ss->queue, ss->convert, ss->sink, NULL);
+    if (!gst_element_link_many(ss->source, ss->queue, ss->convert, ss->sink, NULL)) {
         g_printerr("Elements could not be linked.\n");
         gst_object_unref(ss->pipeline);
         return 2;
@@ -49,9 +49,9 @@ int gstream_setup(StreamSet *ss, Settings *settings, uint8_t emit_signals, uint8
     return 0;
 }
 
-int gstream_pull_sample(StreamSet *ss, u_int16_t data[]) {
+int gstream_pull_sample(StreamSet *ss, uint8_t *data, Settings *settings) {
     // pull the sample
-    GstSample *sample = gst_app_sink_pull_sample(GST_APP_SINK(ss->sink));
+    GstSample *sample = gst_app_sink_try_pull_sample(GST_APP_SINK(ss->sink), GST_SECOND / settings->framerate);
     
     // don't continue if sample is not found
     if (!sample) return 1;
@@ -75,7 +75,7 @@ int gstream_pull_sample(StreamSet *ss, u_int16_t data[]) {
 
 int print_bus_message(GstBus *bus, StreamSet *ss) {
     // get newest message
-    GstMessage *msg = gst_bus_timed_pop_filtered (bus, GST_CLOCK_TIME_NONE,
+    GstMessage *msg = gst_bus_timed_pop_filtered (bus, GST_SECOND / 10,
         GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
 
     // parse message, given it exists

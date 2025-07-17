@@ -1,5 +1,11 @@
-#pragma once
+#ifndef DETECT_APRILTAGS_H
+#define DETECT_APRILTAGS_H
 
+// external functionality
+#include <settings.h>
+#include <gstream_from_cam.h>
+
+// apriltag functionality
 #include <apriltag/apriltag.h>
 #include <apriltag/apriltag_pose.h>
 #include <apriltag/apriltag_math.h>
@@ -15,16 +21,14 @@
 #include "apriltag/tagStandard41h12.h"
 #include "apriltag/tagStandard52h13.h"
 
-#include <gstream_from_cam.h>
-
 #include <errno.h>
 
 #define  HAMM_HIST_MAX 10
 
-typedef struct _apriltag_settings {
-    bool quiet;
-    uint8_t iters;
-} apriltag_settings;
+int apriltag_setup(apriltag_detector_t **td, apriltag_family_t **tf, Settings *settings);
 
+int apriltag_detect(apriltag_detector_t **td, apriltag_family_t **tf, zarray_t **det, uint8_t *imdata, Settings *settings);
 
+int apriltag_cleanup(apriltag_detector_t **td, apriltag_family_t **tf, zarray_t **det);
 
+#endif

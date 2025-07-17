@@ -21,10 +21,12 @@ typedef struct _Settings {
     uint8_t stride; // number of bytes per pixel, 1 or 2 for grayscale
 
     // apriltags
+    uint8_t debug; // do debugging
+
     uint8_t quiet; // quiet debugging
     uint8_t iterations; // number of iterations to run on detection
 
-    uint8_t hamming; // number of bit errors per detection
+    int hamming; // number of bit errors per detection
     uint8_t threads; // number of threads to use, make 1 usually
     float dec; // decimation factor on images, make 1.5, 2.0, 3.0, 4.0, etc.
     float blur; // blurring factor, 0.0 does nothing, >0.0 blurs, <0.0 sharpens

@@ -91,6 +91,7 @@ int load_settings_from_path(const char* path, Settings *settings) {
     PARSE_INT(framerate);
     PARSE_INT(stride);
 
+    PARSE_BOOL(debug);
     PARSE_BOOL(quiet);
     PARSE_INT(iterations);
     PARSE_INT(hamming);

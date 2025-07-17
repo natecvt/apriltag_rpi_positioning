@@ -27,6 +27,7 @@ link_directories(${GST_LIBRARY_DIRS})
 add_executable(tracker
     src/settings.c
     src/gstream_from_cam.c
+    src/detect_apriltags.c
     src/main.c
 )
 
