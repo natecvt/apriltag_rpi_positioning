@@ -69,16 +69,25 @@ int apriltag_detect(apriltag_detector_t **td, apriltag_family_t **tf, zarray_t *
 
         im = image_u8_create(settings->width, settings->height);
         
+        // copy captured image to the buffer, this accomodates extra row space in im
         for (int i = 0; i < settings->height; i++) {
             uint8_t* row_d = im->buf + i * im->stride;
             uint8_t* row_s = imdata + i * settings->width;
             memcpy(row_d, row_s, settings->width);
         }
 
+        // write the current image buffer to a file
         if ((*td)->debug) {
-            image_u8_write_pnm(im, "/home/natec/apriltag_rpi_positioning/output/debug.pgm");
+            char path[100];
+            strcpy(path, settings->output_directory);
+            strcat(path, "debug.pnm");
+            printf(path);
+            printf("\n");
+
+            image_u8_write_pnm(im, path);
         }
 
+        // get detections
         *det = apriltag_detector_detect(*td, im);
 
         if (errno == EAGAIN) {
@@ -86,6 +95,7 @@ int apriltag_detect(apriltag_detector_t **td, apriltag_family_t **tf, zarray_t *
             return 2;
         }
 
+        // loop through detections, every d* is a tag detected in the image
         for (int i = 0; i < zarray_size(*det); i++) {
             apriltag_detection_t *d;
             zarray_get(*det, i, &d);
@@ -93,14 +103,16 @@ int apriltag_detect(apriltag_detector_t **td, apriltag_family_t **tf, zarray_t *
             if (!settings->quiet)
                 printf("detection %3d: id (%2dx%2d)-%-4d, hamming %d, margin %8.3f\n",
                         i, d->family->nbits, d->family->h, d->id, d->hamming, d->decision_margin);
-
             
+            // TODO: add pose estimation
         }
 
+        // display total time
         if (!settings->quiet) {
                 timeprofile_display((*td)->tp);
         }
 
+        // calculate time and free the image
         double t = timeprofile_total_utime((*td)->tp) / 1.0E3;
         total_time += t;
         printf("Time: %12.3f \n", t);

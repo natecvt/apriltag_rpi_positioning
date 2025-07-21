@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
     // perform setup, check error output
     ec = gstream_setup(&streams, &settings, FALSE, FALSE);
     if (ec) {
-        g_printerr("Setup returned error code: %d\n", ec);
+        g_printerr("Gstream setup returned error code: %d\n", ec);
         exit(1);
     }
 
@@ -48,6 +48,7 @@ int main(int argc, char *argv[]) {
         printf("Setup returned error code: %d\n", ec);
     }
 
+    // #TODO: create a proper g_loop and create a bus watch
     while(TRUE) {
         // pulling sample from camera and print bus error message, the only gstream functions used in a loop
         ec = gstream_pull_sample(&streams, data, &settings);

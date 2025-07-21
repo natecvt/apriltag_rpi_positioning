@@ -67,6 +67,16 @@ static json_object *jobj;
     }                                                                                   \
     strcpy(settings->name, json_object_get_string(tmp));
 
+float get_float_at(char *stream, int at) {
+    int j = 0, n = 0;
+    while (n < at) {
+        if (j > FLEN) return 0.0f;
+        n += stream[j] == 32; // ASCII code for space, delimiter in .cal file
+        j++;
+    }
+
+    return strtod(stream + j, NULL);
+}
 
 int load_settings_from_path(const char* path, Settings *settings) {
     struct json_object* tmp = NULL;
@@ -102,6 +112,48 @@ int load_settings_from_path(const char* path, Settings *settings) {
     PARSE_DOUBLE_MIN_MAX(blur, -1.0f, 1.0f);
     PARSE_BOOL(refine);
     PARSE_INT(tag_family);
+
+    (*settings).output_directory = (char*)malloc(PLEN);
+    PARSE_STRING(output_directory);
+
+    (*settings).cal_file_path = (char*)malloc(PLEN);
+    PARSE_STRING(cal_file_path);
+
+    PARSE_BOOL(use_preset_camera_calibration);
+    if (settings->use_preset_camera_calibration) {
+        PARSE_DOUBLE_MIN_MAX(fx,          0.0, __FLT_MAX__);
+        PARSE_DOUBLE_MIN_MAX(fy,          0.0, __FLT_MAX__);
+        PARSE_DOUBLE_MIN_MAX(cx, -__FLT_MAX__, __FLT_MAX__);
+        PARSE_DOUBLE_MIN_MAX(cy, -__FLT_MAX__, __FLT_MAX__);
+    }
+    else {
+        FILE* f = fopen(settings->cal_file_path, "r");
+
+        if (f == NULL) {
+            printf("Failed to open calibration file or invalid path");
+        }
+
+        char *stream = (char*)malloc(FLEN);
+
+        if (fgets(stream, FLEN, f) != NULL) {
+            settings->fx = get_float_at(stream, 0);
+            settings->fy = get_float_at(stream, 1);
+            settings->cx = get_float_at(stream, 2);
+            settings->cy = get_float_at(stream, 2);
+        }
+        else {
+            printf("Failed to read calibration file or invalid format, using default values");
+            PARSE_DOUBLE_MIN_MAX(fx,          0.0, __FLT_MAX__);
+            PARSE_DOUBLE_MIN_MAX(fy,          0.0, __FLT_MAX__);
+            PARSE_DOUBLE_MIN_MAX(cx, -__FLT_MAX__, __FLT_MAX__);
+            PARSE_DOUBLE_MIN_MAX(cy, -__FLT_MAX__, __FLT_MAX__);
+        }
+
+        free(stream);
+        fclose(f);
+
+        printf("%f\n", settings->fy);
+    }
 
     json_object_put(jobj);
     success = 1;

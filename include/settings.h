@@ -6,9 +6,12 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
 
 // #TODO: implement auto-pathing, when path not given
 #define PATH "settings/"
+#define PLEN 100
+#define FLEN 100
 
 typedef struct _Settings {
     // images
@@ -33,6 +36,13 @@ typedef struct _Settings {
     uint8_t refine; // boolean for if refining
 
     uint8_t tag_family; // tag family, refer to tagTypes enum
+
+    // calibration
+    uint8_t use_preset_camera_calibration; // whether to use .cal file (false) or .json file (true)
+    char* cal_file_path; // the path to the calibration file
+    float fx, fy, cx, cy; // each of the intrinsic camera matrix coefficients, in pixels
+
+    char* output_directory; // the folder where debug output will be created
 } Settings;
 
 enum tagTypes {

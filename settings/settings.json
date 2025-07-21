@@ -6,7 +6,7 @@
     "framerate" : 10,
     "stride": 1,
 
-    "debug" : false,
+    "debug" : true,
     "quiet" : false,
     "iterations" : 1,
     "hamming" : 2,
@@ -14,5 +14,16 @@
     "dec": 1.5,
     "blur": 0.8,
     "refine": false,
-    "tag_family": 1
+    "tag_family": 1,
+    "tagsize" : 0.106,
+
+    "output_directory" : "$HOME/apriltag_rpi_positioning/output/",
+    "calibration_directory" : "$HOME/apriltag_rpi_positioning/calibration/imgs/",
+
+    "use_preset_camera_calibration" : false,
+    "cal_file_path" : "/home/natec/apriltag_rpi_positioning/calibration/cam_mat.cal",
+    "fx" : 4225.0,
+    "fy" : 4232.0,
+    "cx" : 0.0,
+    "cy" : 0.0
 }
