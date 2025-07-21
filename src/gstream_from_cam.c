@@ -73,53 +73,53 @@ int gstream_pull_sample(StreamSet *ss, uint8_t *data, Settings *settings) {
     return 0;
 }
 
-int print_bus_message(GstBus *bus, StreamSet *ss) {
-    // get newest message
-    GstMessage *msg = gst_bus_timed_pop_filtered (bus, GST_SECOND / 10,
-        GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
+// int print_bus_message(GstBus *bus, StreamSet *ss) {
+//     // get newest message
+//     GstMessage *msg = gst_bus_timed_pop_filtered (bus, GST_SECOND / 10,
+//         GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
 
-    // parse message, given it exists
-    if (msg != NULL) {
-        GError *err;
-        gchar *debug_info;
+//     // parse message, given it exists
+//     if (msg != NULL) {
+//         GError *err;
+//         gchar *debug_info;
 
-        // cases based on message type, 64 case is broken for some reason
-        int errtype = GST_MESSAGE_TYPE (msg);
+//         // cases based on message type, 64 case is broken for some reason
+//         int errtype = GST_MESSAGE_TYPE (msg);
 
-        switch (errtype) {
-            case GST_MESSAGE_EOS:
-                // for end of stream, should never reach here unless reading from a file or premade stream
-                g_print ("End-Of-Stream reached.\n");
-                return 1;
-            case GST_MESSAGE_ERROR:
-                // for errors
-                gst_message_parse_error (msg, &err, &debug_info);
-                g_printerr ("Error received from element %s: %s\n", GST_OBJECT_NAME (msg->src), err->message);
-                g_printerr ("Debugging information: %s\n", debug_info ? debug_info : "none");
-                g_clear_error (&err);
-                g_free (debug_info);
-                return 2;
-            case GST_MESSAGE_STATE_CHANGED:
-                // reading state changes from the pipeline
-                if (GST_MESSAGE_SRC (msg) == GST_OBJECT (ss->pipeline)) {
-                    GstState old_state, new_state, pending_state;
-                    gst_message_parse_state_changed (msg, &old_state, &new_state, &pending_state);
-                    g_print ("Pipeline state changed from %s to %s:\n",
-                        gst_element_state_get_name (old_state), gst_element_state_get_name (new_state));
-                }
-                break;
-            default:
-                // default, should never happen
-                g_printerr ("Unexpected message received of type: %d\n", errtype);
-                return 3; // uncomment when this never happens anymore
-        }
+//         switch (errtype) {
+//             case GST_MESSAGE_EOS:
+//                 // for end of stream, should never reach here unless reading from a file or premade stream
+//                 g_print ("End-Of-Stream reached.\n");
+//                 return 1;
+//             case GST_MESSAGE_ERROR:
+//                 // for errors
+//                 gst_message_parse_error (msg, &err, &debug_info);
+//                 g_printerr ("Error received from element %s: %s\n", GST_OBJECT_NAME (msg->src), err->message);
+//                 g_printerr ("Debugging information: %s\n", debug_info ? debug_info : "none");
+//                 g_clear_error (&err);
+//                 g_free (debug_info);
+//                 return 2;
+//             case GST_MESSAGE_STATE_CHANGED:
+//                 // reading state changes from the pipeline
+//                 if (GST_MESSAGE_SRC (msg) == GST_OBJECT (ss->pipeline)) {
+//                     GstState old_state, new_state, pending_state;
+//                     gst_message_parse_state_changed (msg, &old_state, &new_state, &pending_state);
+//                     g_print ("Pipeline state changed from %s to %s:\n",
+//                         gst_element_state_get_name (old_state), gst_element_state_get_name (new_state));
+//                 }
+//                 break;
+//             default:
+//                 // default, should never happen
+//                 g_printerr ("Unexpected message received of type: %d\n", errtype);
+//                 return 3; // uncomment when this never happens anymore
+//         }
 
-        // unref the message object
-        gst_message_unref (msg);
-    }
+//         // unref the message object
+//         gst_message_unref (msg);
+//     }
 
-    return 0;
-}
+//     return 0;
+// }
 
 int gstream_cleanup(GstBus *bus, StreamSet *ss) {
     // unrefs objects passed by reference

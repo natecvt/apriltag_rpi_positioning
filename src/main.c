@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
     bus = gst_element_get_bus(streams.pipeline);
 
     // allocating data 
-    data = malloc(settings.np * settings.stride);
+    data = (uint8_t *)malloc(settings.np * settings.stride);
     if (data == NULL) {
         perror("Image data allocation failed\n");
         exit(2);

@@ -1,4 +1,5 @@
 /bin/**
 /output/**
 /build/**
+/calibration/build/**
 .vscode
