@@ -81,8 +81,6 @@ float get_float_at(char *stream, int at) {
 int load_settings_from_path(const char* path, Settings *settings) {
     struct json_object* tmp = NULL;
 
-    int success = 0;
-
     if (access(path, F_OK) != 0) {
         printf("Incorrect Settings Path\n");
         return 1;
@@ -112,6 +110,7 @@ int load_settings_from_path(const char* path, Settings *settings) {
     PARSE_DOUBLE_MIN_MAX(blur, -1.0f, 1.0f);
     PARSE_BOOL(refine);
     PARSE_INT(tag_family);
+    PARSE_DOUBLE_MIN_MAX(tag_size, 0.01f, 1.0f);
 
     (*settings).output_directory = (char*)malloc(PLEN);
     PARSE_STRING(output_directory);
@@ -143,20 +142,19 @@ int load_settings_from_path(const char* path, Settings *settings) {
         }
         else {
             printf("Failed to read calibration file or invalid format, using default values");
-            PARSE_DOUBLE_MIN_MAX(fx,          0.0, __FLT_MAX__);
-            PARSE_DOUBLE_MIN_MAX(fy,          0.0, __FLT_MAX__);
+            PARSE_DOUBLE_MIN_MAX(fx,         0.0f, __FLT_MAX__);
+            PARSE_DOUBLE_MIN_MAX(fy,         0.0f, __FLT_MAX__);
             PARSE_DOUBLE_MIN_MAX(cx, -__FLT_MAX__, __FLT_MAX__);
             PARSE_DOUBLE_MIN_MAX(cy, -__FLT_MAX__, __FLT_MAX__);
         }
 
         free(stream);
         fclose(f);
-
-        printf("%f\n", settings->fy);
     }
 
+    PARSE_DOUBLE_MIN_MAX(grid_spacing, 0.0f, 10.0f);
+
     json_object_put(jobj);
-    success = 1;
     return 0;
 }
 

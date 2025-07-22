@@ -25,10 +25,10 @@
 
 #define  HAMM_HIST_MAX 10
 
-int apriltag_setup(apriltag_detector_t **td, apriltag_family_t **tf, Settings *settings);
+int apriltag_setup(apriltag_detector_t **td, apriltag_family_t **tf, apriltag_detection_info_t *info, Settings *settings);
 
-int apriltag_detect(apriltag_detector_t **td, apriltag_family_t **tf, zarray_t **det, uint8_t *imdata, Settings *settings);
+int apriltag_detect(apriltag_detector_t **td, apriltag_family_t **tf, zarray_t **det, uint8_t *imdata, apriltag_detection_info_t *info, Settings *settings, float *global_pose);
 
-int apriltag_cleanup(apriltag_detector_t **td, apriltag_family_t **tf, zarray_t **det);
+int apriltag_cleanup(apriltag_detector_t **td, apriltag_family_t **tf, apriltag_detection_info_t *info, zarray_t **det);
 
 #endif

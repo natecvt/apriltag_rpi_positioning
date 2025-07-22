@@ -7,16 +7,24 @@ int main(int argc, char *argv[]) {
     setenv("GST_DEBUG", "3", 1);
     gst_init(&argc, &argv);
 
-    Settings settings;
+    Settings settings; // global settings structure
+
+    // gstreamer setup stuffs
     StreamSet streams;
     int ec;
     GstBus *bus;
     GstState *state1, *state2;
-    uint8_t *data;
 
+    uint8_t *data; // image data
+
+    // apriltag items
     zarray_t *det;
     apriltag_detector_t *td;
     apriltag_family_t *tf;
+    apriltag_detection_info_t info;
+    apriltag_pose_t pose;
+
+    float global_pose[3];
 
     // read in settings from json file, #TODO: make the path an arg (using stropts?)
     ec = load_settings_from_path("/home/natec/apriltag_rpi_positioning/settings/settings.json", &settings);
@@ -43,7 +51,7 @@ int main(int argc, char *argv[]) {
     }
 
     // perform apriltag setup
-    ec = apriltag_setup(&td, &tf, &settings);
+    ec = apriltag_setup(&td, &tf, &info, &settings);
     if (ec) {
         printf("Setup returned error code: %d\n", ec);
     }
@@ -58,11 +66,13 @@ int main(int argc, char *argv[]) {
         }
 
         // put image processing and data transmission functions below \/
-        ec = apriltag_detect(&td, &tf, &det, data, &settings);
+        ec = apriltag_detect(&td, &tf, &det, data, &info, &settings, global_pose);
         if (ec) {
             printf("Apriltag detection returned error code: %d\n", ec);
             // do not exit, perform error handling based on what happened
         }
+
+        printf("Coords = %5.3f, %5.3f, %5.3f \n", global_pose[0], global_pose[1], global_pose[2]);
     }
 
     // gstreamer cleanup
@@ -72,7 +82,7 @@ int main(int argc, char *argv[]) {
         exit(4);
     }
     // apriltag cleanup
-    apriltag_cleanup(&td, &tf, &det);
+    apriltag_cleanup(&td, &tf, &info, &det);
     
     // free dynamically allocated image data array
     free(data);

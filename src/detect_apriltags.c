@@ -2,8 +2,10 @@
 
 // #TODO: create macros that help with different image bit depths/strides
 
-int apriltag_setup(apriltag_detector_t **td, apriltag_family_t **tf, Settings *settings) 
-{
+int apriltag_setup(apriltag_detector_t **td, 
+        apriltag_family_t **tf, 
+        apriltag_detection_info_t *info, 
+        Settings *settings) {
     *td = apriltag_detector_create();
 
     switch(settings->tag_family) {
@@ -56,10 +58,45 @@ int apriltag_setup(apriltag_detector_t **td, apriltag_family_t **tf, Settings *s
     (*td)->quad_sigma = settings->blur;
     (*td)->refine_edges = settings->refine;
 
+    (*info).tagsize = settings->tag_size;
+    (*info).fx = settings->fx;
+    (*info).fy = settings->fy;
+    (*info).cx = settings->cx;
+    (*info).cy = settings->cy;
+
     return 0;
 }
 
-int apriltag_detect(apriltag_detector_t **td, apriltag_family_t **tf, zarray_t **det, uint8_t *imdata, Settings *settings) {
+void pose_global_transform(float **global_pose, matd_t *centers) {
+    float x, y, z;
+
+    if (centers == NULL) {
+        printf("Invalid matrix pointer entered\n");
+        return;
+    }
+
+    if (centers->nrows == 0 || centers->ncols == 0) {
+        printf("No tag found\n");
+        return;
+    }
+
+    x = -centers->data[0];
+    y = -centers->data[centers->ncols];
+    z = centers->data[2 * centers->ncols] - 3;
+
+    (*global_pose)[0] = x;
+    (*global_pose)[1] = y;
+    (*global_pose)[2] = z;
+
+}
+
+int apriltag_detect(apriltag_detector_t **td,
+        apriltag_family_t **tf, 
+        zarray_t **det, 
+        uint8_t *imdata, 
+        apriltag_detection_info_t *info, 
+        Settings *settings, 
+        float *global_pose) {
     // loop through iterations
     image_u8_t *im = NULL;
 
@@ -96,6 +133,8 @@ int apriltag_detect(apriltag_detector_t **td, apriltag_family_t **tf, zarray_t *
         }
 
         // loop through detections, every d* is a tag detected in the image
+        matd_t *centers = matd_create(4, zarray_size(*det));
+
         for (int i = 0; i < zarray_size(*det); i++) {
             apriltag_detection_t *d;
             zarray_get(*det, i, &d);
@@ -105,7 +144,21 @@ int apriltag_detect(apriltag_detector_t **td, apriltag_family_t **tf, zarray_t *
                         i, d->family->nbits, d->family->h, d->id, d->hamming, d->decision_margin);
             
             // TODO: add pose estimation
+            (*info).det = d;
+            apriltag_pose_t pose;
+
+            double err = estimate_tag_pose(info, &pose);
+            
+            centers->data[i]                      = pose.t->data[0];
+            centers->data[centers->ncols + i]     = pose.t->data[1];
+            centers->data[2 * centers->ncols + i] = pose.t->data[2];
+            centers->data[3 * centers->ncols + i] = err;
         }
+
+        // TODO: Add pose estimation function below:
+        pose_global_transform(&global_pose, centers);
+
+        matd_destroy(centers);
 
         // display total time
         if (!settings->quiet) {
@@ -123,7 +176,10 @@ int apriltag_detect(apriltag_detector_t **td, apriltag_family_t **tf, zarray_t *
     return 0;
 }
 
-int apriltag_cleanup(apriltag_detector_t **td, apriltag_family_t **tf, zarray_t **det) {
+int apriltag_cleanup(apriltag_detector_t **td, 
+        apriltag_family_t **tf, 
+        apriltag_detection_info_t *info, 
+        zarray_t **det) {
     apriltag_detections_destroy(*det);
     tagStandard41h12_destroy(*tf);
     apriltag_detector_destroy(*td);

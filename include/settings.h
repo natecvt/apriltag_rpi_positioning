@@ -36,11 +36,12 @@ typedef struct _Settings {
     uint8_t refine; // boolean for if refining
 
     uint8_t tag_family; // tag family, refer to tagTypes enum
+    float tag_size; // the size of the tags in meters
 
     // calibration
     uint8_t use_preset_camera_calibration; // whether to use .cal file (false) or .json file (true)
     char* cal_file_path; // the path to the calibration file
-    float fx, fy, cx, cy; // each of the intrinsic camera matrix coefficients, in pixels
+    float fx, fy, cx, cy, grid_spacing; // each of the intrinsic camera matrix coefficients, in pixels
 
     char* output_directory; // the folder where debug output will be created
 } Settings;

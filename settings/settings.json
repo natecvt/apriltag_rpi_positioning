@@ -6,16 +6,16 @@
     "framerate" : 10,
     "stride": 1,
 
-    "debug" : true,
-    "quiet" : false,
+    "debug" : false,
+    "quiet" : true,
     "iterations" : 1,
     "hamming" : 2,
     "threads" : 2,
     "dec": 1.5,
-    "blur": 0.8,
+    "blur": 0.9,
     "refine": false,
     "tag_family": 1,
-    "tagsize" : 0.106,
+    "tag_size" : 0.035,
 
     "output_directory" : "$HOME/apriltag_rpi_positioning/output/",
     "calibration_directory" : "$HOME/apriltag_rpi_positioning/calibration/imgs/",
@@ -25,5 +25,7 @@
     "fx" : 4225.0,
     "fy" : 4232.0,
     "cx" : 0.0,
-    "cy" : 0.0
+    "cy" : 0.0,
+
+    "grid_spacing" : 1.0
 }
