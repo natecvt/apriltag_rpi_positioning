@@ -4,7 +4,8 @@
 
 int apriltag_setup(apriltag_detector_t **td, 
         apriltag_family_t **tf, 
-        apriltag_detection_info_t *info, 
+        apriltag_detection_info_t *info,
+        CoordDefs *cd,
         Settings *settings) {
     *td = apriltag_detector_create();
 
@@ -64,12 +65,18 @@ int apriltag_setup(apriltag_detector_t **td,
     (*info).cx = settings->cx;
     (*info).cy = settings->cy;
 
+    (*cd).center_x = settings->grid_unit_length * (float)(settings->center_id % settings->grid_units_x);
+    (*cd).center_y = settings->grid_unit_width * (float)(settings->center_id / settings->grid_units_x);
+    (*cd).center_z = settings->grid_elevation;
+    (*cd).ulength_x = settings->grid_unit_length;
+    (*cd).uwidth_y = settings->grid_unit_width;
+    (*cd).nx = settings->grid_units_x;
+    (*cd).ny = settings->grid_units_y;
+
     return 0;
 }
 
-void pose_global_transform(float **global_pose, matd_t *centers) {
-    float x, y, z;
-
+void pose_global_transform(float **global_pose, matd_t *centers, int **ids, CoordDefs *cd) {
     if (centers == NULL) {
         printf("Invalid matrix pointer entered\n");
         return;
@@ -79,10 +86,18 @@ void pose_global_transform(float **global_pose, matd_t *centers) {
         printf("No tag found\n");
         return;
     }
+    float x = 0.0, y = 0.0, z = 0.0;
 
-    x = -centers->data[0];
-    y = -centers->data[centers->ncols];
-    z = centers->data[2 * centers->ncols] - 3;
+    for (int j = 0; j < centers->ncols; j++) {
+        int id = (*ids)[j];
+
+        float tag_dx = cd->ulength_x * (id % cd->nx) - cd->center_x,
+              tag_dy = cd->uwidth_y * (id / cd->nx) - cd->center_y;
+
+        x += (tag_dx - centers->data[j])                            / centers->ncols;
+        y += (tag_dy - centers->data[centers->ncols + j])           / centers->ncols;
+        z += (cd->center_z + centers->data[2 * centers->ncols + j]) / centers->ncols;
+    }
 
     (*global_pose)[0] = x;
     (*global_pose)[1] = y;
@@ -96,6 +111,7 @@ int apriltag_detect(apriltag_detector_t **td,
         uint8_t *imdata, 
         apriltag_detection_info_t *info, 
         Settings *settings, 
+        CoordDefs *cd,
         float *global_pose) {
     // loop through iterations
     image_u8_t *im = NULL;
@@ -133,30 +149,37 @@ int apriltag_detect(apriltag_detector_t **td,
         }
 
         // loop through detections, every d* is a tag detected in the image
-        matd_t *centers = matd_create(4, zarray_size(*det));
+        int ndets = zarray_size(*det);
+        int *ids = malloc(sizeof(int) * ndets);
+        matd_t *centers = matd_create(4, ndets);
 
-        for (int i = 0; i < zarray_size(*det); i++) {
+        for (int j = 0; j < ndets; j++) {
             apriltag_detection_t *d;
-            zarray_get(*det, i, &d);
+            zarray_get(*det, j, &d);
 
             if (!settings->quiet)
                 printf("detection %3d: id (%2dx%2d)-%-4d, hamming %d, margin %8.3f\n",
-                        i, d->family->nbits, d->family->h, d->id, d->hamming, d->decision_margin);
+                        j, d->family->nbits, d->family->h, d->id, d->hamming, d->decision_margin);
             
             // TODO: add pose estimation
             (*info).det = d;
+
+            ids[j] = d->id;
+
             apriltag_pose_t pose;
 
+            // get the pose (vector is cetered at cam center and points toward the tag center)
             double err = estimate_tag_pose(info, &pose);
             
-            centers->data[i]                      = pose.t->data[0];
-            centers->data[centers->ncols + i]     = pose.t->data[1];
-            centers->data[2 * centers->ncols + i] = pose.t->data[2];
-            centers->data[3 * centers->ncols + i] = err;
+            // copy the pose data to one row of centers
+            // #TODO: add R-matrix as well
+            centers->data[j]                      = pose.t->data[0];
+            centers->data[centers->ncols + j]     = pose.t->data[1];
+            centers->data[2 * centers->ncols + j] = pose.t->data[2];
+            centers->data[3 * centers->ncols + j] = err;
         }
 
-        // TODO: Add pose estimation function below:
-        pose_global_transform(&global_pose, centers);
+        pose_global_transform(&global_pose, centers, &ids, cd);
 
         matd_destroy(centers);
 

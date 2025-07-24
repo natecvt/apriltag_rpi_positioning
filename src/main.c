@@ -23,8 +23,9 @@ int main(int argc, char *argv[]) {
     apriltag_family_t *tf;
     apriltag_detection_info_t info;
     apriltag_pose_t pose;
+    CoordDefs cd;
 
-    float global_pose[3];
+    float global_pose[3] = {0.0f, 0.0f, 0.0f};
 
     // read in settings from json file, #TODO: make the path an arg (using stropts?)
     ec = load_settings_from_path("/home/natec/apriltag_rpi_positioning/settings/settings.json", &settings);
@@ -51,10 +52,13 @@ int main(int argc, char *argv[]) {
     }
 
     // perform apriltag setup
-    ec = apriltag_setup(&td, &tf, &info, &settings);
+    ec = apriltag_setup(&td, &tf, &info, &cd, &settings);
     if (ec) {
         printf("Setup returned error code: %d\n", ec);
     }
+
+    printf("X %f\n", cd.center_x);
+    printf("Z %f\n", cd.center_z);
 
     // #TODO: create a proper g_loop and create a bus watch
     while(TRUE) {
@@ -66,13 +70,15 @@ int main(int argc, char *argv[]) {
         }
 
         // put image processing and data transmission functions below \/
-        ec = apriltag_detect(&td, &tf, &det, data, &info, &settings, global_pose);
+        ec = apriltag_detect(&td, &tf, &det, data, &info, &settings, &cd, global_pose);
         if (ec) {
             printf("Apriltag detection returned error code: %d\n", ec);
             // do not exit, perform error handling based on what happened
         }
 
         printf("Coords = %5.3f, %5.3f, %5.3f \n", global_pose[0], global_pose[1], global_pose[2]);
+
+        fflush(stdout);
     }
 
     // gstreamer cleanup

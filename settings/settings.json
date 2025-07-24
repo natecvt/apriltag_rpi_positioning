@@ -7,7 +7,7 @@
     "stride": 1,
 
     "debug" : false,
-    "quiet" : true,
+    "quiet" : false,
     "iterations" : 1,
     "hamming" : 2,
     "threads" : 2,
@@ -27,5 +27,11 @@
     "cx" : 0.0,
     "cy" : 0.0,
 
-    "grid_spacing" : 1.0
+    "grid_unit_length" : 0.781,
+    "grid_unit_width" : 0.483,
+    "grid_units_x" : 2,
+    "grid_units_y" : 2,
+    "grid_elevation" : -3.0,
+    "use_computed_center" : true,
+    "center_id" : 10
 }

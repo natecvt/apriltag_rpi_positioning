@@ -41,7 +41,12 @@ typedef struct _Settings {
     // calibration
     uint8_t use_preset_camera_calibration; // whether to use .cal file (false) or .json file (true)
     char* cal_file_path; // the path to the calibration file
-    float fx, fy, cx, cy, grid_spacing; // each of the intrinsic camera matrix coefficients, in pixels
+    float fx, fy, cx, cy; // each of the intrinsic camera matrix coefficients, in pixels
+
+    float grid_unit_length, grid_unit_width, grid_elevation; 
+    uint8_t grid_units_x, grid_units_y; // number of tags in each dimension, total grid covers (units_x - 1) * l * (units_y - 1) * w
+    uint8_t use_computed_center; // whether to choose center or compute it
+    uint8_t center_id; // when using traditional grid layout, the id of the tag at center
 
     char* output_directory; // the folder where debug output will be created
 } Settings;

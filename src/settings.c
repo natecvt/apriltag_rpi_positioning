@@ -138,7 +138,7 @@ int load_settings_from_path(const char* path, Settings *settings) {
             settings->fx = get_float_at(stream, 0);
             settings->fy = get_float_at(stream, 1);
             settings->cx = get_float_at(stream, 2);
-            settings->cy = get_float_at(stream, 2);
+            settings->cy = get_float_at(stream, 3);
         }
         else {
             printf("Failed to read calibration file or invalid format, using default values");
@@ -152,7 +152,19 @@ int load_settings_from_path(const char* path, Settings *settings) {
         fclose(f);
     }
 
-    PARSE_DOUBLE_MIN_MAX(grid_spacing, 0.0f, 10.0f);
+    PARSE_DOUBLE_MIN_MAX(grid_unit_length, 0.0f, 10.0f);
+    PARSE_DOUBLE_MIN_MAX(grid_unit_width, 0.0f, 10.0f);
+    PARSE_DOUBLE_MIN_MAX(grid_elevation, -__FLT_MAX__, __FLT_MAX__); // positive down, negative up
+    PARSE_INT(grid_units_x);
+    PARSE_INT(grid_units_y);
+    
+    PARSE_BOOL(use_computed_center);
+    if (settings->use_computed_center) {
+        settings->center_id = (settings->grid_units_x / 2) + settings->grid_units_x * (settings->grid_units_y / 2);
+    }
+    else {
+        PARSE_INT(center_id);
+    }
 
     json_object_put(jobj);
     return 0;
