@@ -119,6 +119,7 @@ int load_settings_from_path(const char* path, Settings *settings) {
     PARSE_STRING(cal_file_path);
 
     PARSE_BOOL(use_preset_camera_calibration);
+    PARSE_STRING(images_directory);
     if (settings->use_preset_camera_calibration) {
         PARSE_DOUBLE_MIN_MAX(fx,          0.0, __FLT_MAX__);
         PARSE_DOUBLE_MIN_MAX(fy,          0.0, __FLT_MAX__);

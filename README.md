@@ -2,10 +2,11 @@
 Small library for use finding exact position using apriltags in a vertical setup. For use on raspberry pi, with the picam.
 
 #### Dependencies
-`sudo apt install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-libcamerasrc gstreamer1.0-tools gstreamer1.0-libav`
+`sudo apt install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-libcamera gstreamer1.0-tools gstreamer1.0-libav libjson-c-dev`
 
 Apriltag debian package does not install the `.so` with all function definitions, so run
-`git clone https://github.com/AprilRobotics/apriltag/ && cd apriltag && cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build --target install`
+`git clone https://github.com/AprilRobotics/apriltag/ && cd apriltag && sudo cmake -B build -DCMAKE_BUILD_TYPE=Release && sudo cmake --build build --target install`
+, then delete the apriltag folder.
 
 Sometimes libglib2.0-dev won't be installed properly, reinstall it and the glibconfig.h file should appear, or run
 `sudo cp /usr/lib/aarch64-linux-gnu/glib-2.0/include/glibconfig.h /usr/include/glib-2.0/glibconfig.h`
