@@ -28,7 +28,7 @@ int gstream_setup(StreamSet *ss, Settings *settings, uint8_t emit_signals, uint8
     // #TODO: add format options
     GstCaps *capssrc = gst_caps_new_simple(
         "video/x-raw",
-        "format", G_TYPE_STRING, "NV12",
+        "format", G_TYPE_STRING, "BGRx",
         "width", G_TYPE_INT, 1920,
         "height", G_TYPE_INT, 1080,
         NULL);
@@ -41,7 +41,7 @@ int gstream_setup(StreamSet *ss, Settings *settings, uint8_t emit_signals, uint8
         "framerate", GST_TYPE_FRACTION, settings->framerate, 1,
         NULL);
 
-    g_object_set(G_OBJECT(capssrc), "caps", ss->caps, NULL);
+    g_object_set(G_OBJECT(ss->caps), "caps", capssrc, NULL);
     gst_app_sink_set_caps(GST_APP_SINK(ss->sink), capssink);
     gst_caps_unref(capssrc);
     gst_caps_unref(capssink); // have to unref objects

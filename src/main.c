@@ -2,6 +2,7 @@
 #include <gstream_from_cam.h>
 #include <detect_apriltags.h>
 //#include <transmit_pose.h>
+#include <stdlib.h>
 
 int main(int argc, char *argv[]) {
     setenv("GST_DEBUG", "3", 1);
@@ -36,7 +37,7 @@ int main(int argc, char *argv[]) {
     settings.np = settings.width * settings.height;
 
     // perform setup, check error output
-    ec = gstream_setup(&streams, &settings, FALSE, FALSE);
+    ec = gstream_setup(&streams, &settings, TRUE, FALSE);
     if (ec) {
         g_printerr("Gstream setup returned error code: %d\n", ec);
         exit(1);
@@ -76,9 +77,8 @@ int main(int argc, char *argv[]) {
             // do not exit, perform error handling based on what happened
         }
 
-        printf("Coords = %5.3f, %5.3f, %5.3f \n", global_pose[0], global_pose[1], global_pose[2]);
-
         fflush(stdout);
+        system("clear");
     }
 
     // gstreamer cleanup

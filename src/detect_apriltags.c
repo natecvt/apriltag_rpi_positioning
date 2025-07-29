@@ -170,6 +170,14 @@ int apriltag_detect(apriltag_detector_t **td,
 
             // get the pose (vector is cetered at cam center and points toward the tag center)
             double err = estimate_tag_pose(info, &pose);
+
+            printf("Rotation matrix R = \n{%2.2f, %2.2f, %2.2f\n %2.2f, %2.2f, %2.2f\n %2.2f, %2.2f, %2.2f\n",
+                pose.R->data[0], pose.R->data[1], pose.R->data[2],
+                pose.R->data[3], pose.R->data[4], pose.R->data[5],
+                pose.R->data[6], pose.R->data[7], pose.R->data[8]
+            );
+
+            printf("Position vector t = \n{%2.2f, %2.2f, %2.2f}\n", pose.t->data[0], pose.t->data[1], pose.t->data[2]);
             
             // copy the pose data to one row of centers
             // #TODO: add R-matrix as well

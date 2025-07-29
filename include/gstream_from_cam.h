@@ -5,7 +5,8 @@
 
 #include <gst/gst.h>
 #include <gst/app/gstappsink.h>
-#include <gst/app/gstappsrc.h>
+
+#include <stdint.h>
 
 // a type to contain all relevant gstreamer and image parameters
 typedef struct _StreamSet {
