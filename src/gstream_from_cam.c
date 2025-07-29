@@ -6,12 +6,14 @@ int gstream_setup(StreamSet *ss, Settings *settings, uint8_t emit_signals, uint8
     ss->pipeline = gst_pipeline_new("pipeline");
 
     ss->source = gst_element_factory_make("libcamerasrc", "source");
+    ss->caps = gst_element_factory_make("capsfilter", "caps");
     ss->queue = gst_element_factory_make("queue", "queue");
     ss->convert = gst_element_factory_make("videoconvert", "convert");
+    ss->scale = gst_element_factory_make("videoscale", "scale");
     ss->sink = gst_element_factory_make("appsink", "sink");
 
     // check if things were created correctly
-    if (!ss->pipeline || !ss->queue || !ss->source || !ss->convert || !ss->sink) {
+    if (!ss->pipeline || !ss->queue || !ss->source || !ss->caps || !ss->convert || !ss->scale || !ss->sink) {
         g_printerr("Not all elements could be created.\n");
         return 1;
     }
@@ -24,7 +26,14 @@ int gstream_setup(StreamSet *ss, Settings *settings, uint8_t emit_signals, uint8
     
     // caps filter for setting the output image parameters 
     // #TODO: add format options
-    GstCaps *caps = gst_caps_new_simple(
+    GstCaps *capssrc = gst_caps_new_simple(
+        "video/x-raw",
+        "format", G_TYPE_STRING, "NV12",
+        "width", G_TYPE_INT, 1920,
+        "height", G_TYPE_INT, 1080,
+        NULL);
+
+    GstCaps *capssink = gst_caps_new_simple(
         "video/x-raw",
         "format", G_TYPE_STRING, "GRAY8",
         "width", G_TYPE_INT, settings->width,
@@ -32,12 +41,14 @@ int gstream_setup(StreamSet *ss, Settings *settings, uint8_t emit_signals, uint8
         "framerate", GST_TYPE_FRACTION, settings->framerate, 1,
         NULL);
 
-    gst_app_sink_set_caps(GST_APP_SINK(ss->sink), caps);
-    gst_caps_unref(caps); // have to unref objects
+    g_object_set(G_OBJECT(capssrc), "caps", ss->caps, NULL);
+    gst_app_sink_set_caps(GST_APP_SINK(ss->sink), capssink);
+    gst_caps_unref(capssrc);
+    gst_caps_unref(capssink); // have to unref objects
 
     // add and link everything to the pipeline
-    gst_bin_add_many(GST_BIN (ss->pipeline), ss->source, ss->queue, ss->convert, ss->sink, NULL);
-    if (!gst_element_link_many(ss->source, ss->queue, ss->convert, ss->sink, NULL)) {
+    gst_bin_add_many(GST_BIN (ss->pipeline), ss->source, ss->caps, ss->queue, ss->convert, ss->scale, ss->sink, NULL);
+    if (!gst_element_link_many(ss->source, ss->caps, ss->queue, ss->convert, ss->scale, ss->sink, NULL)) {
         g_printerr("Elements could not be linked.\n");
         gst_object_unref(ss->pipeline);
         return 2;

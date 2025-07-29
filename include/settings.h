@@ -40,6 +40,7 @@ typedef struct _Settings {
 
     // calibration
     uint8_t use_preset_camera_calibration; // whether to use .cal file (false) or .json file (true)
+    uint8_t n_cal_imgs; // number of images to use in intrinsic calibration
     char* images_directory; // directory used for creating images
     char* cal_file_path; // the path to the calibration file
     float fx, fy, cx, cy; // each of the intrinsic camera matrix coefficients, in pixels

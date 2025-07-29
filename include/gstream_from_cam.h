@@ -5,13 +5,16 @@
 
 #include <gst/gst.h>
 #include <gst/app/gstappsink.h>
+#include <gst/app/gstappsrc.h>
 
 // a type to contain all relevant gstreamer and image parameters
 typedef struct _StreamSet {
     GstElement *pipeline;
     GstElement *source;
+    GstElement *caps;
     GstElement *queue;
     GstElement *convert;
+    GstElement *scale;
     GstElement *sink;
 } StreamSet;
 

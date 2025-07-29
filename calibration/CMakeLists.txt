@@ -27,7 +27,7 @@ link_directories(${GST_LIBRARY_DIRS})
 add_executable(calibrate
     ../src/settings.c
     ../src/gstream_from_cam.c
-    take_images.cpp
+    take_calibration_images.c
 )
 
 target_link_libraries(calibrate
