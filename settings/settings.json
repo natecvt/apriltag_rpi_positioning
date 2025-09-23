@@ -17,12 +17,12 @@
     "tag_family": 1,
     "tag_size" : 0.035,
 
-    "output_directory" : "/home/natec/apriltag_rpi_positioning/output/",
+    "output_directory" : "/home/natec/Documents/apriltag_rpi_positioning/output/",
 
-    "images_directory" : "/home/natec/apriltag_rpi_positioning/calibration/imgs/",
+    "images_directory" : "/home/natec/Documents/apriltag_rpi_positioning/calibration/imgs/",
     "n_cal_imgs" : 10,
     "use_preset_camera_calibration" : false,
-    "cal_file_path" : "/home/natec/apriltag_rpi_positioning/calibration/cam_mat.cal",
+    "cal_file_path" : "/home/natec/Documents/apriltag_rpi_positioning/calibration/cam_mat.cal",
     "fx" : 4225.0,
     "fy" : 4232.0,
     "cx" : 0.0,

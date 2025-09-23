@@ -1,7 +1,7 @@
 #include <settings.h>
 #include <gstream_from_cam.h>
 #include <detect_apriltags.h>
-//#include <transmit_pose.h>
+#include <transmit_pose.h>
 
 int main(int argc, char *argv[]) {
     setenv("GST_DEBUG", "3", 1);
@@ -25,10 +25,13 @@ int main(int argc, char *argv[]) {
     apriltag_pose_t pose;
     CoordDefs cd;
 
-    float global_pose[3] = {0.0f, 0.0f, 0.0f};
+    int fd;
+
+    // global pose: <x, y, z, yaw>
+    float global_pose[] = {0.0f, 0.0f, 0.0f, 0.0f};
 
     // read in settings from json file, #TODO: make the path an arg (using stropts?)
-    ec = load_settings_from_path("/home/natec/apriltag_rpi_positioning/settings/settings.json", &settings);
+    ec = load_settings_from_path("/home/natec/Documents/apriltag_rpi_positioning/settings/settings.json", &settings);
     if(ec) {
         printf("Settings failed to load with error code: %d\n", ec);
         exit(1);
@@ -55,10 +58,14 @@ int main(int argc, char *argv[]) {
     ec = apriltag_setup(&td, &tf, &info, &cd, &settings);
     if (ec) {
         printf("Setup returned error code: %d\n", ec);
+        exit(3);
     }
 
-    printf("X %f\n", cd.center_x);
-    printf("Z %f\n", cd.center_z);
+    ec = uart_init(fd, "/dev/serial0", B115200);
+    if (ec) {
+        printf("UART init returned error code: %d\n", ec);
+        exit(4);
+    }
 
     // #TODO: create a proper g_loop and create a bus watch
     while(TRUE) {
@@ -78,7 +85,8 @@ int main(int argc, char *argv[]) {
 
         printf("Coords = %5.3f, %5.3f, %5.3f \n", global_pose[0], global_pose[1], global_pose[2]);
 
-        fflush(stdout);
+
+
     }
 
     // gstreamer cleanup

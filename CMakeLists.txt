@@ -6,6 +6,9 @@ project(apriltag_tracking)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
+add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+add_link_options(-fsanitize=address)
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONC REQUIRED json-c)
 pkg_check_modules(GST REQUIRED gstreamer-1.0 gstreamer-app-1.0)
@@ -28,6 +31,7 @@ add_executable(tracker
     src/settings.c
     src/gstream_from_cam.c
     src/detect_apriltags.c
+    src/transmit_pose.c
     src/main.c
 )
 

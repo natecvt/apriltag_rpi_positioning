@@ -132,6 +132,7 @@ int load_settings_from_path(const char* path, Settings *settings) {
 
         if (f == NULL) {
             printf("Failed to open calibration file or invalid path");
+            return 3;
         }
 
         char *stream = (char*)malloc(FLEN);

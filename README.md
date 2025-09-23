@@ -28,6 +28,14 @@ There will be 6 parts to this program:
 4. Press calibrate and save the results to a variable, the 'K' attribute will contain the full intrinsic matrix.
 5. Copy the nonzero/nonunitary values in column-first order.
 
+
+#### Enable Serial Communication
+1. run `sudo raspi-config`
+2. under `Interface Options` (3), then `Serial Port` (I6), check 'yes'
+3. `sudo reboot`, then `/dev/serial0` should exist, referred to by pins 8(TX) and 10(RX)
+
+
+
 Functions will return error codes starting from zero for debugging
 
 current compile command:

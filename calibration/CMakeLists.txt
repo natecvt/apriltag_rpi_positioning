@@ -4,6 +4,9 @@ set(CMAKE_CXX_STANDARD 17)
 
 project(rpicam_calibration)
 
+add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+add_link_options(-fsanitize=address)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../bin")
 
 find_package(PkgConfig REQUIRED)
