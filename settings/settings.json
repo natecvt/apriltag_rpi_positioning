@@ -34,5 +34,8 @@
     "grid_units_y" : 2,
     "grid_elevation" : -3.0,
     "use_computed_center" : true,
-    "center_id" : 10
+    "center_id" : 10,
+
+    "uart_path" : "/dev/serial0",
+    "uart_baudrate" : 115200
 }

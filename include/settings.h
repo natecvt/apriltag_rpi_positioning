@@ -10,7 +10,7 @@
 
 // #TODO: implement auto-pathing, when path not given
 #define PATH "settings/"
-#define PLEN 100
+#define PLEN 75
 #define FLEN 100
 
 typedef struct _Settings {
@@ -51,6 +51,9 @@ typedef struct _Settings {
     uint8_t center_id; // when using traditional grid layout, the id of the tag at center
 
     char* output_directory; // the folder where debug output will be created
+
+    char* uart_path; // the UART device path
+    uint32_t uart_baudrate; // the UART baud rate
 } Settings;
 
 enum tagTypes {

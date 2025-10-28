@@ -120,6 +120,8 @@ int load_settings_from_path(const char* path, Settings *settings) {
 
     PARSE_BOOL(use_preset_camera_calibration);
     PARSE_INT(n_cal_imgs);
+
+    (*settings).images_directory = (char*)malloc(PLEN);
     PARSE_STRING(images_directory);
     if (settings->use_preset_camera_calibration) {
         PARSE_DOUBLE_MIN_MAX(fx,          0.0, __FLT_MAX__);
@@ -167,6 +169,10 @@ int load_settings_from_path(const char* path, Settings *settings) {
     else {
         PARSE_INT(center_id);
     }
+
+    (*settings).uart_path = (char*)malloc(PLEN);
+    PARSE_STRING(uart_path);
+    PARSE_INT(uart_baudrate);
 
     json_object_put(jobj);
     return 0;

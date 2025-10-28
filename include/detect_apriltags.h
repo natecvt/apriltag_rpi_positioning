@@ -21,24 +21,16 @@
 #include "apriltag/tagStandard41h12.h"
 #include "apriltag/tagStandard52h13.h"
 
-#include <math.h>
 #include <errno.h>
 
 #define  HAMM_HIST_MAX 10
 
-typedef struct CoordDefs {
-    // center x and y from where tag id 0 is placed, z from ground level
-    float center_x, center_y, center_z;
-    // unit length and width of tiling in x and y, can be different
-    float ulength_x, uwidth_y;
-    // number of tags in the grid
-    uint8_t nx, ny;
-} CoordDefs;
+#define MAX_DETECTIONS 16
 
-int apriltag_setup(apriltag_detector_t **td, apriltag_family_t **tf, apriltag_detection_info_t *info, CoordDefs *cd, Settings *settings);
+int apriltag_setup(apriltag_detector_t **td, apriltag_family_t **tf, apriltag_detection_info_t *info, Settings *settings);
 
-int apriltag_detect(apriltag_detector_t **td, apriltag_family_t **tf, zarray_t **det, uint8_t *imdata, apriltag_detection_info_t *info, Settings *settings, CoordDefs *cd, float *global_pose);
+int apriltag_detect(apriltag_detector_t *td, uint8_t *imdata, apriltag_detection_info_t *info, apriltag_pose_t *pose, Settings *settings, int *ids);
 
-int apriltag_cleanup(apriltag_detector_t **td, apriltag_family_t **tf, apriltag_detection_info_t *info, zarray_t **det);
+int apriltag_cleanup(apriltag_detector_t **td, apriltag_family_t **tf, apriltag_detection_info_t *info);
 
 #endif
