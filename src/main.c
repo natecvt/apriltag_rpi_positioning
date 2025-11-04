@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
     apriltag_detection_info_t info;
     apriltag_pose_t pose;
     int ids[MAX_DETECTIONS]; // array to hold detected ids
+    uint8_t nids = 0;
 
     // pose array and transmission
     CoordDefs cd;
@@ -106,7 +107,7 @@ int main(int argc, char *argv[]) {
         }
 
         // detect apriltags and update the pose and ids array
-        ec = apriltag_detect(td, data, &info, &pose, &settings, ids);
+        ec = apriltag_detect(td, data, &info, &pose, &settings, ids, nids);
         if (ec) {
             printf("Apriltag detection returned error code: %d\n", ec);
             // do not exit, perform error handling based on what happened
@@ -126,7 +127,7 @@ int main(int argc, char *argv[]) {
             printf("Pose transmission returned error code: %d\n", ec);
         }
 
-        ec = log_message(&logger, p, q, ids, ec);
+        ec = log_message(&logger, p, q, ids, nids);
         if (ec) {
             printf("Logging returned error code: %d\n", ec);
         }

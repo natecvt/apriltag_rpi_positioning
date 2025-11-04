@@ -1,7 +1,9 @@
-# aprlitag_rpi_positioning
+# README
+
 Small library for use finding exact position using apriltags in a vertical setup. For use on raspberry pi, with the picam.
 
-#### Dependencies
+## Dependencies
+
 `sudo apt install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-libcamera gstreamer1.0-tools gstreamer1.0-libav libjson-c-dev`
 
 Apriltag debian package does not install the `.so` with all function definitions, so run
@@ -14,14 +16,17 @@ Sometimes libglib2.0-dev won't be installed properly, reinstall it and the glibc
 (-): not started, (i): in progress, (o): tentatively complete, Nothing: complete
 
 There will be 6 parts to this program:
+
 - (o) Interpreting a config file to set image size, framerate, tag family, other constants needed by the program 
 - (o) Setting up the gstreamer video capabilities and providing functionality to the creation of images from it. This will also need to convert the data from images to the necessary format used by the apriltags library
 - (i) Running apriltag detection on all image data, managing timing to help maintain efficiency, refining pose estimate if multiple tags are detected
-- (-) Connecting to the beaglebone via I2C or SPI through the GPIO pins and sending pose data, including: x, y, z, R, time, status, ndetected, uncertainty?
+- (i) Connecting to the beaglebone via I2C or SPI through the GPIO pins and sending pose data, including: x, y, z, qx, qy, qz, qw, time, status, ndetected, uncertainty?
 - (i) A main program that manages all of the above
 - (i) Calibration script that writes intrinsic matrix values to a small file
+- (i) Logging functionality for testing
 
-#### Calibration
+## Calibration
+
 1. Change the n_cal_imgs setting, then run ./bin/calibrate. Make sure the resolution is the same as desired when running the main program.
 2. Cycle through the dialog and press enter when the calibration checkerboard is in frame. Take as many images as needed, change orientation of the board or camera to get more versatile data.
 3. Download the .pnm images and run the cameraCalibrator script on matlab, giving the square size in mm. Other programs to accomplish this also exist.

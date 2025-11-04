@@ -29,7 +29,7 @@
 
 int apriltag_setup(apriltag_detector_t **td, apriltag_family_t **tf, apriltag_detection_info_t *info, Settings *settings);
 
-int apriltag_detect(apriltag_detector_t *td, uint8_t *imdata, apriltag_detection_info_t *info, apriltag_pose_t *pose, Settings *settings, int *ids);
+int apriltag_detect(apriltag_detector_t *td, uint8_t *imdata, apriltag_detection_info_t *info, apriltag_pose_t *pose, Settings *settings, int *ids, uint16_t nids);
 
 int apriltag_cleanup(apriltag_detector_t **td, apriltag_family_t **tf, apriltag_detection_info_t *info);
 
