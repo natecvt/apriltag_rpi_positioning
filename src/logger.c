@@ -75,7 +75,7 @@ int log_message(Logger *logger, matd_t *p, matd_t *q, int *ids, int num_ids, str
     }
 
     if (logger->log_poses) {
-        dprintf(logger->log_fd, "%.3f,%.3f,%.3f,", matd_get(p, 0, 0), matd_get(p, 1, 0), matd_get(p, 2, 0));
+        dprintf(logger->log_fd, "%.6f,%.6f,%.6f,", matd_get(p, 0, 0), matd_get(p, 1, 0), matd_get(p, 2, 0));
     }
 
     if (logger->log_quats) {
