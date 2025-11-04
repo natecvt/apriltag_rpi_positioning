@@ -17,8 +17,7 @@ int main(int argc, char *argv[]) {
 
     uint8_t *data; // image data
 
-    // read in settings from json file, #TODO: make the path an arg (using stropts?)
-    ec = load_settings_from_path("/home/natec/apriltag_rpi_positioning/settings/settings.json", &settings);
+    ec = load_settings_from_path(argv[1], &settings);
     if (ec) {
         printf("Settings failed to load with error code: %d\n", ec);
         exit(1);
@@ -73,13 +72,9 @@ int main(int argc, char *argv[]) {
 
         // write to specific location
         char path[100];
-        strcpy(path, settings.images_directory);
-        char number[5];
-        sprintf(number, "%d", i);
-        strcat(path, number);
-        strcat(path, ".pnm");
-        printf(path);
-        printf("\n");
+        
+        snprintf(path, 100, "%s%d.pnm", settings.images_directory, i);
+        printf("%s\n", path);
 
         ec = image_u8_write_pnm(im, path);
         if (ec) {

@@ -8,6 +8,8 @@
 #include <uart.h>
 #include <math.h>
 
+#define SMALL_NUM 0.0001
+
 typedef struct CoordDefs {
     // center x and y from where tag id 0 is placed, z from ground level
     float center_x, center_y, center_z;
@@ -21,6 +23,6 @@ int init_transmit_pose(UARTInfo *uart_info, Settings *settings, CoordDefs *cd);
 
 int pose_transform(matd_t *p, matd_t *q, apriltag_pose_t *pose);
 
-int transmit_pose(UARTInfo *uart_info, float *pose);
+int transmit_pose(UARTInfo *uart_info, matd_t *p, matd_t *q);
 
 #endif

@@ -38,6 +38,7 @@ add_executable(tracker
 )
 
 target_link_libraries(tracker
+    m
     ${JSONC_LIBRARIES}
     ${GST_LIBRARIES}
     ${APRILTAG_LIBRARY}

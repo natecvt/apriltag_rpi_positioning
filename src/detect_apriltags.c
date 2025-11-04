@@ -144,6 +144,10 @@ int apriltag_detect(apriltag_detector_t *td,
             }
         }
 
+        for (uint8_t k = ndets; k < MAX_DETECTIONS; k++) {
+            ids[k] = -1; // mark unused slots with -1
+        }
+
         // display total time
         if (!settings->quiet) {
             timeprofile_display(td->tp);

@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
 
     // gstreamer setup stuffs
     StreamSet streams;
-    int ec;
+    uint8_t ec;
     GstBus *bus;
     GstState *state1, *state2;
 
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     apriltag_family_t *tf;
     apriltag_detection_info_t info;
     apriltag_pose_t pose;
-    int ids[MAX_DETECTIONS];
+    int ids[MAX_DETECTIONS]; // array to hold detected ids
 
     // pose array and transmission
     CoordDefs cd;
@@ -42,11 +42,28 @@ int main(int argc, char *argv[]) {
 
     UARTInfo uart_info;
 
+    // logging setup
+    Logger logger;
+    uint8_t log_options = LO_EN | LO_EN_IDS | LO_EN_POSES | LO_EN_QUATS | LO_EN_TIME;
+
+    char *log_filename = (char *)malloc(256 * sizeof(char));
+    if (log_filename == NULL) {
+        perror("Log filename allocation failed\n");
+        exit(1);
+    }
+    name_logfile(log_filename);
+
+    ec = init_logger(&logger, log_filename, log_options);
+    if (ec) {
+        printf("Logger initialization failed with error code: %d\n", ec);
+        exit(2);
+    }
+
     // read in settings from json file, #TODO: make the path an arg (using stropts?)
     ec = load_settings_from_path(argv[1], &settings);
     if(ec) {
         printf("Settings failed to load with error code: %d\n", ec);
-        exit(1);
+        exit(3);
     }
     settings.np = settings.width * settings.height;
 
@@ -54,7 +71,7 @@ int main(int argc, char *argv[]) {
     ec = gstream_setup(&streams, &settings, TRUE, FALSE);
     if (ec) {
         g_printerr("Gstream setup returned error code: %d\n", ec);
-        exit(1);
+        exit(4);
     }
 
     bus = gst_element_get_bus(streams.pipeline);
@@ -63,7 +80,7 @@ int main(int argc, char *argv[]) {
     data = (uint8_t *)malloc(settings.np * settings.stride);
     if (data == NULL) {
         perror("Image data allocation failed\n");
-        exit(2);
+        exit(5);
     }
 
     // perform apriltag setup
@@ -72,14 +89,11 @@ int main(int argc, char *argv[]) {
         printf("Setup returned error code: %d\n", ec);
     }
 
-    printf("X %f\n", cd.center_x);
-    printf("Z %f\n", cd.center_z);
-
     // perform UART setup
     ec = init_transmit_pose(&uart_info, &settings, &cd);
     if (ec) {
         printf("UART initialization failed with error code: %d\n", ec);
-        exit(3);
+        exit(6);
     }
 
     // #TODO: create a proper g_loop and create a bus watch
@@ -100,14 +114,21 @@ int main(int argc, char *argv[]) {
                 // no detections, continue
                 continue;
             }
-            else {
-                ec = pose_transform(p, q, &pose);
-                if (ec) {
-                    printf("Pose transformation returned error code: %d\n", ec);
-                }
+        }
 
-                break;
-            }
+        ec = pose_transform(p, q, &pose);
+        if (ec) {
+            printf("Pose transformation returned error code: %d\n", ec);
+        }
+
+        ec = transmit_pose(&uart_info, p, q);
+        if (ec) {
+            printf("Pose transmission returned error code: %d\n", ec);
+        }
+
+        ec = log_message(&logger, p, q, ids, ec);
+        if (ec) {
+            printf("Logging returned error code: %d\n", ec);
         }
     }
 
@@ -117,10 +138,13 @@ int main(int argc, char *argv[]) {
     ec = gstream_cleanup(bus, &streams);
     if (ec) {
         g_printerr("Cleanup returned error code: %d\n", ec);
-        exit(4);
+        exit(6);
     }
     // apriltag cleanup
     apriltag_cleanup(&td, &tf, &info);
+
+    matd_destroy(p);
+    matd_destroy(q);
     
     // free dynamically allocated image data array
     free(data);
