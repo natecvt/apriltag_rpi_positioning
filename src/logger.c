@@ -37,13 +37,13 @@ int init_logger(Logger *logger, const char *log_file_path, uint8_t options) {
     logger->log_quats =  0b00100000 & options;
 
     // Write CSV header
-    if (logger->log_time) dprintf(logger->log_fd, "Time,");
+    if (logger->log_time) dprintf(logger->log_fd, "Time (ms),");
     if (logger->log_ids) {
         dprintf(logger->log_fd, "IDs,");
         dprintf(logger->log_fd, "nIDs,");
     }
-    if (logger->log_poses) dprintf(logger->log_fd, "pX,pY,pZ,");
-    if (logger->log_quats) dprintf(logger->log_fd, "qW,qX,qY,qZ");
+    if (logger->log_poses) dprintf(logger->log_fd, "pX (m),pY (m),pZ (m),");
+    if (logger->log_quats) dprintf(logger->log_fd, "qW (m),qX (m),qY (m),qZ (m)");
 
     dprintf(logger->log_fd, "\n");
 
