@@ -61,7 +61,7 @@ int log_message(Logger *logger, matd_t *p, matd_t *q, int *ids, int num_ids) {
 
     if (logger->log_ids) {
         for (int i = 0; i < num_ids; i++) {
-            dprintf(logger->log_fd, "%d;", ids[i]);
+            dprintf(logger->log_fd, "%d/", ids[i]);
         }
         dprintf(logger->log_fd, ",%d,", num_ids);
     }

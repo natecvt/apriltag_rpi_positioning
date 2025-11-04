@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
         }
 
         // detect apriltags and update the pose and ids array
-        ec = apriltag_detect(td, data, &info, &pose, &settings, ids, nids);
+        ec = apriltag_detect(td, data, &info, &pose, &settings, ids, &nids);
         if (ec) {
             printf("Apriltag detection returned error code: %d\n", ec);
             // do not exit, perform error handling based on what happened

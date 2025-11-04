@@ -73,7 +73,7 @@ int apriltag_detect(apriltag_detector_t *td,
         apriltag_pose_t *pose,
         Settings *settings,
         int *ids,
-        uint16_t nids) {
+        uint8_t *nids) {
     // loop through iterations
     image_u8_t *im = NULL;
 
@@ -110,16 +110,16 @@ int apriltag_detect(apriltag_detector_t *td,
         }
 
         // loop through detections, every d* is a tag detected in the image
-        nids = zarray_size(det);
+        (*nids) = zarray_size(det);
 
-        if (nids == 0) {
+        if ((*nids) == 0) {
             if (!settings->quiet) printf("No detections.\n");
             zarray_destroy(det);
             image_u8_destroy(im);
             return 3;
         }
 
-        for (int j = 0; j < nids; j++) {
+        for (int j = 0; j < (*nids); j++) {
             static apriltag_detection_t *d;
             zarray_get(det, j, &d);
 
@@ -145,7 +145,7 @@ int apriltag_detect(apriltag_detector_t *td,
             }
         }
 
-        for (uint8_t k = nids; k < MAX_DETECTIONS; k++) {
+        for (uint8_t k = (*nids); k < MAX_DETECTIONS; k++) {
             ids[k] = -1; // mark unused slots with -1
         }
 
