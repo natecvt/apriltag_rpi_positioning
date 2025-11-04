@@ -1,7 +1,10 @@
+#ifndef LOGGER_H
+#define LOGGER_H
+
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include <time.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -26,6 +29,10 @@
 
 typedef struct Logger {
     int log_fd;
+
+    struct timeval *start;
+    struct timeval *stop;
+
     bool do_logging;
     bool log_images;
     bool log_time;
@@ -41,3 +48,5 @@ int init_logger(Logger *logger, const char *log_file_path, uint8_t options);
 int log_message(Logger *logger, matd_t *p, matd_t *q, int *ids, int num_ids);
 
 int close_logger(Logger *logger);
+
+#endif // LOGGER_H
