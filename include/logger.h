@@ -42,7 +42,7 @@ int name_logfile(char *buf);
 
 int init_logger(Logger *logger, const char *log_file_path, uint8_t options);
 
-int log_message(Logger *logger, matd_t *p, matd_t *q, int *ids, int num_ids);
+int log_message(Logger *logger, matd_t *p, matd_t *q, int *ids, int num_ids, struct timeval *tstart, struct timeval *tstop);
 
 int close_logger(Logger *logger);
 

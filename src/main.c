@@ -46,6 +46,7 @@ int main(int argc, char *argv[]) {
     // logging setup
     Logger logger;
     uint8_t log_options = LO_EN | LO_EN_IDS | LO_EN_POSES | LO_EN_QUATS | LO_EN_TIME;
+    struct timeval tstart, tstop;
 
     char *log_filename = (char *)malloc(256 * sizeof(char));
     if (log_filename == NULL) {
@@ -99,6 +100,8 @@ int main(int argc, char *argv[]) {
 
     // #TODO: create a proper g_loop and create a bus watch
     while(!stop) {
+
+        gettimeofday(&tstart, NULL);
         // pulling sample from camera and print bus error message, the only gstream functions used in a loop
         ec = gstream_pull_sample(&streams, data, &settings);
         if (ec) {
@@ -127,7 +130,7 @@ int main(int argc, char *argv[]) {
             printf("Pose transmission returned error code: %d\n", ec);
         }
 
-        ec = log_message(&logger, p, q, ids, nids);
+        ec = log_message(&logger, p, q, ids, nids, &tstart, &tstop);
         if (ec) {
             printf("Logging returned error code: %d\n", ec);
         }

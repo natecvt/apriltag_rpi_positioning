@@ -1,7 +1,5 @@
 #include <logger.h>
 
-struct timeval start, stop;
-
 int name_logfile(char *buf) {
     int i = 0;
     struct stat st;
@@ -39,11 +37,7 @@ int init_logger(Logger *logger, const char *log_file_path, uint8_t options) {
     logger->log_quats =  0b00100000 & options;
 
     // Write CSV header
-    if (logger->log_time) {
-        dprintf(logger->log_fd, "Time,");
-
-        gettimeofday(&start, NULL);
-    }
+    if (logger->log_time) dprintf(logger->log_fd, "Time,");
     if (logger->log_ids) {
         dprintf(logger->log_fd, "IDs,");
         dprintf(logger->log_fd, "nIDs,");
@@ -56,7 +50,7 @@ int init_logger(Logger *logger, const char *log_file_path, uint8_t options) {
     return 0;
 }
 
-int log_message(Logger *logger, matd_t *p, matd_t *q, int *ids, int num_ids) {
+int log_message(Logger *logger, matd_t *p, matd_t *q, int *ids, int num_ids, struct timeval *tstart, struct timeval *tstop) {
     if (!logger->do_logging) {
         printf("Logging not enabled.\n");
         return 0;
@@ -64,12 +58,12 @@ int log_message(Logger *logger, matd_t *p, matd_t *q, int *ids, int num_ids) {
 
     
     if (logger->log_time) {
-        gettimeofday(&stop, NULL);
+        gettimeofday(tstop, NULL);
 
-        int ms_elapsed = (stop.tv_sec - start.tv_sec) * 1000 + (stop.tv_usec - start.tv_usec) / 1000;
+        int ms_elapsed = (tstop->tv_sec - tstart->tv_sec) * 1000 + (tstop->tv_usec - tstart->tv_usec) / 1000;
 
         dprintf(logger->log_fd, "%d,", ms_elapsed);
-        gettimeofday(&start, NULL);
+        gettimeofday(tstart, NULL);
     }
     
 
