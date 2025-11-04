@@ -1,5 +1,7 @@
 #include <logger.h>
 
+struct timeval start, stop;
+
 int name_logfile(char *buf) {
     int i = 0;
     struct stat st;
@@ -40,12 +42,7 @@ int init_logger(Logger *logger, const char *log_file_path, uint8_t options) {
     if (logger->log_time) {
         dprintf(logger->log_fd, "Time,");
 
-        struct timeval start, stop;
-
-        (*logger).start = &start;
-        (*logger).stop = &stop;
-
-        gettimeofday((*logger).start, NULL);
+        gettimeofday(&start, NULL);
     }
     if (logger->log_ids) {
         dprintf(logger->log_fd, "IDs,");
@@ -67,15 +64,12 @@ int log_message(Logger *logger, matd_t *p, matd_t *q, int *ids, int num_ids) {
 
     
     if (logger->log_time) {
-        gettimeofday((*logger).stop, NULL);
+        gettimeofday(&stop, NULL);
 
-        int s_elapsed = ((*logger).stop->tv_sec - (*logger).start->tv_sec);
-        int us_elapsed = ((*logger).stop->tv_usec - (*logger).start->tv_usec);
-
-        int ms_elapsed = s_elapsed * 1000 + us_elapsed / 1000;
+        int ms_elapsed = (stop.tv_sec - start.tv_sec) * 1000 + (stop.tv_usec - start.tv_usec) / 1000;
 
         dprintf(logger->log_fd, "%d,", ms_elapsed);
-        gettimeofday((*logger).start, NULL);
+        gettimeofday(&start, NULL);
     }
     
 

@@ -30,9 +30,6 @@
 typedef struct Logger {
     int log_fd;
 
-    struct timeval *start;
-    struct timeval *stop;
-
     bool do_logging;
     bool log_images;
     bool log_time;
