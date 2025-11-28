@@ -7,7 +7,7 @@
     "stride": 1,
 
     "debug" : false,
-    "quiet" : false,
+    "quiet" : true,
     "iterations" : 1,
     "hamming" : 2,
     "threads" : 2,
@@ -15,12 +15,12 @@
     "blur": 0.9,
     "refine": false,
     "tag_family": 1,
-    "tag_size" : 0.035,
+    "tag_size" : 0.084,
 
     "output_directory" : "/home/natec/apriltag_rpi_positioning/output/",
 
     "images_directory" : "/home/natec/apriltag_rpi_positioning/calibration/imgs/",
-    "n_cal_imgs" : 10,
+    "n_cal_imgs" : 15,
     "use_preset_camera_calibration" : false,
     "cal_file_path" : "/home/natec/apriltag_rpi_positioning/calibration/cam_mat.cal",
     "fx" : 4225.0,
@@ -28,11 +28,11 @@
     "cx" : 0.0,
     "cy" : 0.0,
 
-    "grid_unit_length" : 0.781,
-    "grid_unit_width" : 0.483,
+    "grid_unit_length" : 0.107,
+    "grid_unit_width" : 0.077,
     "grid_units_x" : 2,
     "grid_units_y" : 2,
-    "grid_elevation" : -3.0,
+    "grid_elevation" : 3.0,
     "use_computed_center" : true,
     "center_id" : 10,
 

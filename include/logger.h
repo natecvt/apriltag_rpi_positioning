@@ -22,16 +22,18 @@
 #define LO_NONE 0b00000000
 #define LO_EN 0b00000001
 #define LO_EN_IMAGES 0b00000010
-#define LO_EN_TIME 0b00000100
-#define LO_EN_IDS 0b00001000
-#define LO_EN_POSES 0b00010000
-#define LO_EN_QUATS 0b00100000
+#define LO_EN_DTIME 0b00000100
+#define LO_EN_TIME 0b00001000
+#define LO_EN_IDS 0b00010000
+#define LO_EN_POSES 0b00100000
+#define LO_EN_QUATS 0b01000000
 
 typedef struct Logger {
     int log_fd;
 
     bool do_logging;
     bool log_images;
+    bool log_dtime;
     bool log_time;
     bool log_ids;
     bool log_poses;

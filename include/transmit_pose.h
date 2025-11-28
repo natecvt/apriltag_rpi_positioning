@@ -21,7 +21,9 @@ typedef struct CoordDefs {
 
 int init_transmit_pose(UARTInfo *uart_info, Settings *settings, CoordDefs *cd);
 
-int pose_transform(matd_t *p, matd_t *q, apriltag_pose_t *pose);
+int compare_integers(const void *a, const void *b);
+
+int pose_transform(matd_t *p, matd_t *q, apriltag_pose_t *poses, CoordDefs *cd, int *ids, uint8_t nids);
 
 int transmit_pose(UARTInfo *uart_info, matd_t *p, matd_t *q);
 

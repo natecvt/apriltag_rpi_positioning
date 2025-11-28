@@ -2,7 +2,7 @@
 #include <settings.h>
 #include <apriltag/apriltag.h>
 
-#define SKIP_FRAMES 5
+#define SKIP_FRAMES 4
 
 int main(int argc, char *argv[]) {
     setenv("GST_DEBUG", "0", 1); // gets in the way of the first print
@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
     settings.np = settings.width * settings.height;
 
     // perform setup, check error output
-    ec = gstream_setup(&streams, &settings, FALSE, FALSE);
+    ec = gstream_setup(&streams, &settings, FALSE, TRUE);
     if (ec) {
         g_printerr("Gstream setup returned error code: %d\n", ec);
         exit(1);
@@ -45,11 +45,11 @@ int main(int argc, char *argv[]) {
     int i = 1 - SKIP_FRAMES;
     image_u8_t *im = image_u8_create(settings.width, settings.height);
 
+    printf("Press <Enter> to capture image:");
+
     // #TODO: create a proper g_loop and create a bus watch
     while(TRUE) {
-        printf("Press <Enter> to capture image:");
-        if (getchar() != key_ent) continue;
-
+        
         // pulling sample from camera and print bus error message, the only gstream functions used in a loop
         ec = gstream_pull_sample(&streams, data, &settings);
         if (ec) {
@@ -63,6 +63,7 @@ int main(int argc, char *argv[]) {
             continue;
         }
         
+        if (getchar() != key_ent) continue;
         // copy captured image to the buffer, this accomodates extra row space in im
         for (int i = 0; i < settings.height; i++) {
             uint8_t* row_d = im->buf + i * im->stride;

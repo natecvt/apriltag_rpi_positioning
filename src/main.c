@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     apriltag_detector_t *td;
     apriltag_family_t *tf;
     apriltag_detection_info_t info;
-    apriltag_pose_t pose;
+    apriltag_pose_t poses[MAX_DETECTIONS]; // array to hold all detected positions
     int ids[MAX_DETECTIONS]; // array to hold detected ids
     uint8_t nids = 0;
 
@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
 
     // logging setup
     Logger logger;
-    uint8_t log_options = LO_EN | LO_EN_IDS | LO_EN_POSES | LO_EN_QUATS | LO_EN_TIME;
+    uint8_t log_options = LO_EN | LO_EN_IDS | LO_EN_POSES | LO_EN_QUATS | LO_EN_DTIME | LO_EN_TIME;
     struct timeval tstart, tstop;
 
     char *log_filename = (char *)malloc(256 * sizeof(char));
@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
         }
 
         // detect apriltags and update the pose and ids array
-        ec = apriltag_detect(td, data, &info, &pose, &settings, ids, &nids);
+        ec = apriltag_detect(td, data, &info, poses, &settings, ids, &nids);
         if (ec) {
             printf("Apriltag detection returned error code: %d\n", ec);
             // do not exit, perform error handling based on what happened
@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        ec = pose_transform(p, q, &pose);
+        ec = pose_transform(p, q, poses, &cd, ids, nids);
         if (ec) {
             printf("Pose transformation returned error code: %d\n", ec);
         }
@@ -152,6 +152,8 @@ int main(int argc, char *argv[]) {
     
     // free dynamically allocated image data array
     free(data);
+
+    close_logger(&logger);
 
     exit(0);
 }
