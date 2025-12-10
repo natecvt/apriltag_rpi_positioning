@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef GSTREAM_FROM_CAM_H
 #define GSTREAM_FROM_CAM_H
 
@@ -28,4 +32,8 @@ int print_bus_message(GstBus *bus, StreamSet *ss);
 
 int gstream_cleanup(GstBus *bus, StreamSet *ss);
 
+#endif // GSTREAM_FROM_CAM
+
+#ifdef __cplusplus
+}
 #endif

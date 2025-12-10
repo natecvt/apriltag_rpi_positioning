@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef UART_H
 #define UART_H
 
@@ -33,4 +37,8 @@ ssize_t uart_read(UARTInfo *info, uint8_t *data, size_t size);
 
 
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

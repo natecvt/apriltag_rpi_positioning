@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef TRANSMIT_POSE_H
 #define TRANSMIT_POSE_H
 
@@ -25,4 +29,8 @@ int pose_transform(matd_t *p, matd_t *q, apriltag_pose_t *pose);
 
 int transmit_pose(UARTInfo *uart_info, matd_t *p, matd_t *q);
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

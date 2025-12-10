@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
@@ -70,4 +74,8 @@ enum tagTypes {
 
 int load_settings_from_path(const char* path, Settings *settings);
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

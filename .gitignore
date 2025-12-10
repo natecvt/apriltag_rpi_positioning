@@ -3,4 +3,5 @@
 /build/**
 /calibration/build/**
 /calibration/imgs/**
+debug_**
 .vscode

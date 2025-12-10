@@ -6,7 +6,7 @@
     "framerate" : 30,
     "stride": 1,
 
-    "debug" : false,
+    "debug" : true,
     "quiet" : false,
     "iterations" : 1,
     "hamming" : 2,

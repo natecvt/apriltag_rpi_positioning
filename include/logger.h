@@ -1,3 +1,8 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 #ifndef LOGGER_H
 #define LOGGER_H
 
@@ -47,3 +52,7 @@ int log_message(Logger *logger, matd_t *p, matd_t *q, int *ids, int num_ids, str
 int close_logger(Logger *logger);
 
 #endif // LOGGER_H
+
+#ifdef __cplusplus
+}
+#endif

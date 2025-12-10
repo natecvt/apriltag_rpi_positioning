@@ -12,6 +12,7 @@ add_link_options(-fsanitize=address)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONC REQUIRED json-c)
 pkg_check_modules(GST REQUIRED gstreamer-1.0 gstreamer-app-1.0)
+pkg_check_modules(LIBCAMERA REQUIRED libcamera)
 
 set(APRILTAG_INCLUDE_DIR /usr/include/apriltag)
 set(APRILTAG_COMMON_INCLUDE_DIR /usr/include/apriltag/common)
@@ -21,11 +22,12 @@ include_directories(
     include
     ${JSONC_INCLUDE_DIRS}
     ${GST_INCLUDE_DIRS}
+    ${LIBCAMERA_INCLUDE_DIRS}
     ${APRILTAG_INCLUDE_DIR}
     ${APRILTAG_COMMON_INCLUDE_DIR}
 )
 
-link_directories(${GST_LIBRARY_DIRS})
+link_directories(${GST_LIBRARY_DIRS} ${LIBCAMERA_LIBRARY_DIRS})
 
 add_executable(tracker
     src/settings.c
@@ -34,12 +36,14 @@ add_executable(tracker
     src/transmit_pose.c
     src/logger.c
     src/uart.c
-    src/main.c
+    src/libcamera_stream.cpp
+    src/main.cpp
 )
 
 target_link_libraries(tracker
     m
     ${JSONC_LIBRARIES}
+    ${LIBCAMERA_LIBRARIES}
     ${GST_LIBRARIES}
     ${APRILTAG_LIBRARY}
 )

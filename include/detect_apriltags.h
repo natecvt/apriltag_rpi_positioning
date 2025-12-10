@@ -1,9 +1,12 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef DETECT_APRILTAGS_H
 #define DETECT_APRILTAGS_H
 
 // external functionality
 #include <settings.h>
-#include <gstream_from_cam.h>
 
 // apriltag functionality
 #include <apriltag/apriltag.h>
@@ -27,10 +30,15 @@
 
 #define MAX_DETECTIONS 16
 
+
 int apriltag_setup(apriltag_detector_t **td, apriltag_family_t **tf, apriltag_detection_info_t *info, Settings *settings);
 
 int apriltag_detect(apriltag_detector_t *td, uint8_t *imdata, apriltag_detection_info_t *info, apriltag_pose_t *pose, Settings *settings, int *ids, uint8_t *nids);
 
 int apriltag_cleanup(apriltag_detector_t **td, apriltag_family_t **tf, apriltag_detection_info_t *info);
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
