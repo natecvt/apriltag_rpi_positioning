@@ -57,22 +57,23 @@ static void request_complete(Request *request) {
         return;
     }
 
-    printf("Mapped plane: length=%zu offset=%zu map_offset=%zu map_length=%zu\n",
-           (size_t)yplane.length, (size_t)yplane.offset, (size_t)map_offset, map_length);
+    //printf("Mapped plane: length=%zu offset=%zu map_offset=%zu map_length=%zu\n",
+    //       (size_t)yplane.length, (size_t)yplane.offset, (size_t)map_offset, map_length);
 
     // copy the data to the global data array
     uint8_t *plane_data = static_cast<uint8_t*>(ptr) + map_diff;
+
     memcpy(data, plane_data, yplane.length);
 
     if (munmap(ptr, map_length) == -1) {
         perror("Image buffer munmap failed");
     }
 
+    new_data = 1;
+
     // reuse and requeue request
     request->reuse(libcamera::Request::ReuseBuffers);
     camera->queueRequest(request);
-
-    new_data = 1;
 }
 
 int main(int argc, char *argv[]) {
@@ -231,8 +232,12 @@ int main(int argc, char *argv[]) {
         requests.push_back(std::move(request));
     }
 
-    camera->start();
     camera->requestCompleted.connect(request_complete);
+
+    if (camera->start()) {
+        printf("Cam setup: error trying to start camera\n");
+        exit(6);
+    }
 
     libcamera_request(camera, &requests);
 

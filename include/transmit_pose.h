@@ -14,6 +14,9 @@ extern "C" {
 
 #define SMALL_NUM 0.0001
 
+#define APRILTAG_START_BYTE1 0x00               ///< Start byte 1
+#define APRILTAG_START_BYTE2 0xFF               ///< Start byte 2
+
 typedef struct CoordDefs {
     // center x and y from where tag id 0 is placed, z from ground level
     float center_x, center_y, center_z;

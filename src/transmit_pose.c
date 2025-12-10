@@ -97,9 +97,21 @@ int pose_transform(matd_t *p, matd_t *q, apriltag_pose_t *pose) {
 }
 
 int transmit_pose(UARTInfo *uart_info, matd_t *p, matd_t *q) {
+    uint8_t start_bytes[2] = {APRILTAG_START_BYTE1, APRILTAG_START_BYTE2};
+
+    ssize_t bytes_written = uart_write(uart_info, start_bytes, 2);
+    if (bytes_written != 2) {
+        return -1;
+    }
+
     // Transmit the pose data over UART
-    ssize_t bytes_written = uart_write(uart_info, (uint8_t *)p->data, sizeof(float) * 3);
-    if (bytes_written == -1 || bytes_written != sizeof(float) * 3) {
+    bytes_written = uart_write(uart_info, (uint8_t *)p->data, sizeof(float) * 3);
+    if (bytes_written != sizeof(float) * 3) {
+        return -1;
+    }
+
+    bytes_written = uart_write(uart_info, (uint8_t *)q->data, sizeof(float) * 4);
+    if (bytes_written != sizeof(float) * 4) {
         return -1;
     }
 

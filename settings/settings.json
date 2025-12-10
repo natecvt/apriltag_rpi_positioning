@@ -6,7 +6,7 @@
     "framerate" : 30,
     "stride": 1,
 
-    "debug" : true,
+    "debug" : false,
     "quiet" : false,
     "iterations" : 1,
     "hamming" : 2,
@@ -37,5 +37,5 @@
     "center_id" : 10,
 
     "uart_path" : "/dev/serial0",
-    "uart_baudrate" : 115200
+    "uart_baudrate" : 57600
 }
