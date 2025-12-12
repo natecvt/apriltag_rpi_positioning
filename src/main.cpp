@@ -315,7 +315,7 @@ int main(int argc, char *argv[]) {
             }
 
             // transform the pose to desired coordinates
-            ec = pose_transform(p, q, &pose);
+            ec = pose_transform(p, q, &pose, &cd, ids, nids);
             if (ec) {
                 printf("Pose transformation returned error code: %d\n", ec);
             }
