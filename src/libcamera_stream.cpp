@@ -8,7 +8,7 @@ int libcamera_request(
 
     for (auto &request : *requests) {
         ctrls.set(libcamera::controls::AeEnable, false);
-        ctrls.set(libcamera::controls::ExposureTime, 50000);
+        ctrls.set(libcamera::controls::ExposureTime, 100000);
         ctrls.set(libcamera::controls::AnalogueGain, 2.0);
 
         request->controls() = ctrls;
