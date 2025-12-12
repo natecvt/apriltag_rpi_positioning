@@ -31,13 +31,15 @@ int init_logger(Logger *logger, const char *log_file_path, uint8_t options) {
     logger->log_fd = log_fd;
     logger->do_logging = 0b00000001 & options;
     logger->log_images = 0b00000010 & options;
-    logger->log_time =   0b00000100 & options;
-    logger->log_ids =    0b00001000 & options;
-    logger->log_poses =  0b00010000 & options;
-    logger->log_quats =  0b00100000 & options;
+    logger->log_dtime =  0b00000100 & options;
+    logger->log_time =   0b00001000 & options;
+    logger->log_ids =    0b00010000 & options;
+    logger->log_poses =  0b00100000 & options;
+    logger->log_quats =  0b01000000 & options;
 
     // Write CSV header
-    if (logger->log_time) dprintf(logger->log_fd, "Time (ms),");
+    if (logger->log_dtime) dprintf(logger->log_fd, "dt (ms),");
+    if (logger->log_time) dprintf(logger->log_fd, "t (s),");
     if (logger->log_ids) {
         dprintf(logger->log_fd, "IDs,");
         dprintf(logger->log_fd, "nIDs,");
@@ -56,16 +58,21 @@ int log_message(Logger *logger, matd_t *p, matd_t *q, int *ids, int num_ids, str
         return 0;
     }
 
+    gettimeofday(tstop, NULL);
     
-    if (logger->log_time) {
-        gettimeofday(tstop, NULL);
-
+    if (logger->log_dtime) {
         int ms_elapsed = (tstop->tv_sec - tstart->tv_sec) * 1000 + (tstop->tv_usec - tstart->tv_usec) / 1000;
 
         dprintf(logger->log_fd, "%d,", ms_elapsed);
         gettimeofday(tstart, NULL);
     }
-    
+
+    if (logger->log_time) {
+        int s = tstop->tv_sec;
+        int us = tstop->tv_usec;
+        
+        dprintf(logger->log_fd, "%.6f,", (double)s + (double)us / 1E6);
+    }
 
     if (logger->log_ids) {
         for (int i = 0; i < num_ids; i++) {

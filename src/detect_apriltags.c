@@ -70,7 +70,7 @@ int apriltag_setup(apriltag_detector_t **td,
 int apriltag_detect(apriltag_detector_t *td,
         uint8_t *imdata, 
         apriltag_detection_info_t *info, 
-        apriltag_pose_t *pose,
+        apriltag_pose_t *poses,
         Settings *settings,
         int *ids,
         uint8_t *nids) {
@@ -132,21 +132,18 @@ int apriltag_detect(apriltag_detector_t *td,
             ids[j] = d->id;
 
             // get the pose (vector is cetered at cam center and points toward the tag center)
-            double err = estimate_tag_pose(info, pose);
+            double err = estimate_tag_pose(info, &poses[j]);
 
             if (!settings->quiet) {
-                printf("Rotation matrix R = \n{%2.2f, %2.2f, %2.2f\n %2.2f, %2.2f, %2.2f\n %2.2f, %2.2f, %2.2f\n",
-                    (*pose).R->data[0], (*pose).R->data[1], (*pose).R->data[2],
-                    (*pose).R->data[3], (*pose).R->data[4], (*pose).R->data[5],
-                    (*pose).R->data[6], (*pose).R->data[7], (*pose).R->data[8]
+                printf("Rotation matrix R for tag id: %d = \n{%2.2f, %2.2f, %2.2f\n %2.2f, %2.2f, %2.2f\n %2.2f, %2.2f, %2.2f\n",
+                    ids[j],
+                    poses[j].R->data[0], poses[j].R->data[1], poses[j].R->data[2],
+                    poses[j].R->data[3], poses[j].R->data[4], poses[j].R->data[5],
+                    poses[j].R->data[6], poses[j].R->data[7], poses[j].R->data[8]
                 );
 
-                printf("Position vector t = \n{%2.2f, %2.2f, %2.2f}\n", (*pose).t->data[0], (*pose).t->data[1], (*pose).t->data[2]);
+                printf("Position vector t = \n{%2.2f, %2.2f, %2.2f}\n", poses[j].t->data[0], poses[j].t->data[1], poses[j].t->data[2]);
             }
-        }
-
-        for (uint8_t k = (*nids); k < MAX_DETECTIONS; k++) {
-            ids[k] = -1; // mark unused slots with -1
         }
 
         // display total time
