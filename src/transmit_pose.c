@@ -125,7 +125,6 @@ int transmit_pose(UARTInfo *uart_info, struct timeval *time, matd_t *p, matd_t *
     }
 
     // Transmit the pose data over UART
-<<<<<<< HEAD
     bytes_written = uart_write(uart_info, (uint8_t *)p->data, sizeof(float) * 3);
     if (bytes_written != sizeof(float) * 3) {
         return -1;
@@ -138,13 +137,6 @@ int transmit_pose(UARTInfo *uart_info, struct timeval *time, matd_t *p, matd_t *
 
     bytes_written = uart_write(uart_info, last, 3);
     if (bytes_written != 3) {
-=======
-    uint8_t start_bytes = {0, 255};
-    ssize_t bytes_written = uart_write(uart_info, start_bytes, 2);
-
-    bytes_written = uart_write(uart_info, (uint8_t *)p->data, sizeof(float) * 3);
-    if (bytes_written == -1 || bytes_written != sizeof(float) * 3) {
->>>>>>> origin/main
         return -1;
     }
 
