@@ -18,12 +18,12 @@ Sometimes libglib2.0-dev won't be installed properly, reinstall it and the glibc
 There will be 6 parts to this program:
 
 - (o) Interpreting a config file to set image size, framerate, tag family, other constants needed by the program 
-- (o) Setting up the gstreamer video capabilities and providing functionality to the creation of images from it. This will also need to convert the data from images to the necessary format used by the apriltags library
-- (i) Running apriltag detection on all image data, managing timing to help maintain efficiency, refining pose estimate if multiple tags are detected
-- (i) Connecting to the beaglebone via I2C or SPI through the GPIO pins and sending pose data, including: x, y, z, qx, qy, qz, qw, time, status, ndetected, uncertainty?
+- (o) Setting up the camera capture and buffers associated with image data
+- (o) Running apriltag detection on all image data, managing timing to help maintain efficiency, refining pose estimate if multiple tags are detected
+- (i) Connecting to the beaglebone via UART through the GPIO pins and sending pose data, including: x, y, z, qx, qy, qz, qw, time, status, ndetected, uncertainty?
 - (i) A main program that manages all of the above
 - (i) Calibration script that writes intrinsic matrix values to a small file
-- (i) Logging functionality for testing
+- (o) Logging functionality for testing
 
 ## Calibration
 

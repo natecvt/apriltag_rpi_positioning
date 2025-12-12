@@ -96,11 +96,19 @@ int pose_transform(matd_t *p, matd_t *q, apriltag_pose_t *pose) {
     return 0;
 }
 
-int transmit_pose(UARTInfo *uart_info, matd_t *p, matd_t *q) {
+int transmit_pose(UARTInfo *uart_info, struct timeval *time, matd_t *p, matd_t *q, uint8_t state) {
     uint8_t start_bytes[2] = {APRILTAG_START_BYTE1, APRILTAG_START_BYTE2};
-
+    uint32_t time_us = (time->tv_sec - time->tv_sec) * 1000000 + (time->tv_usec - time->tv_usec);
+    uint8_t last[3] = {0, state, 0};
+    
     ssize_t bytes_written = uart_write(uart_info, start_bytes, 2);
     if (bytes_written != 2) {
+        return -1;
+    }
+
+    // Transmit time of UART
+    bytes_written = uart_write(uart_info, (uint8_t *)(&time_us), sizeof(uint32_t));
+    if (bytes_written != sizeof(uint32_t)) {
         return -1;
     }
 
@@ -112,6 +120,11 @@ int transmit_pose(UARTInfo *uart_info, matd_t *p, matd_t *q) {
 
     bytes_written = uart_write(uart_info, (uint8_t *)q->data, sizeof(float) * 4);
     if (bytes_written != sizeof(float) * 4) {
+        return -1;
+    }
+
+    bytes_written = uart_write(uart_info, last, 3);
+    if (bytes_written != 3) {
         return -1;
     }
 

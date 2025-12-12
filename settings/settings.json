@@ -1,7 +1,7 @@
 {
     "width" : 640,
     "height" : 480,
-    "is_height_from_ar" : true,
+    "is_height_from_ar" : false,
     "aspectratio" : [1 , 1],
     "framerate" : 30,
     "stride": 1,
@@ -36,6 +36,6 @@
     "use_computed_center" : true,
     "center_id" : 10,
 
-    "uart_path" : "/dev/serial0",
+    "uart_path" : "/dev/ttyAMA0",
     "uart_baudrate" : 57600
 }

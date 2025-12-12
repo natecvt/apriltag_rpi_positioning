@@ -14,8 +14,8 @@ extern "C" {
 
 #define SMALL_NUM 0.0001
 
-#define APRILTAG_START_BYTE1 0x00               ///< Start byte 1
-#define APRILTAG_START_BYTE2 0xFF               ///< Start byte 2
+#define APRILTAG_START_BYTE1 0x0A               ///< Start byte 1, newline character so each transmission is readable in output
+#define APRILTAG_START_BYTE2 0x0A               ///< Start byte 2
 
 typedef struct CoordDefs {
     // center x and y from where tag id 0 is placed, z from ground level
@@ -26,11 +26,22 @@ typedef struct CoordDefs {
     uint8_t nx, ny;
 } CoordDefs;
 
+typedef enum sm_states
+{
+    STANDBY = 0,
+    TAKEOFF = 1,
+    GUIDED = 2,
+    LANDING = 3,
+    SM_LOITER = 4,
+    NAILING = 5,
+    RETURN = 6,
+} sm_states;
+
 int init_transmit_pose(UARTInfo *uart_info, Settings *settings, CoordDefs *cd);
 
 int pose_transform(matd_t *p, matd_t *q, apriltag_pose_t *pose);
 
-int transmit_pose(UARTInfo *uart_info, matd_t *p, matd_t *q);
+int transmit_pose(UARTInfo *uart_info, struct timeval *time, matd_t *p, matd_t *q, uint8_t state);
 
 #endif
 

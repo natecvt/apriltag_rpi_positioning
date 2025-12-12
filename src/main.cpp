@@ -85,6 +85,23 @@ int main(int argc, char *argv[]) {
 
     Settings settings; // global settings structure
 
+    // state input items
+    uint8_t state_in = STANDBY;
+    struct timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
+
+    struct termios oldt, newt;
+
+    // Disable canonical mode so characters arrive immediately
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
+    fd_set read_fd;
+    
+
     // libcamera objects
     std::unique_ptr<CameraManager> cm = std::make_unique<CameraManager>();
     FrameBufferAllocator *allocator;
@@ -259,6 +276,23 @@ int main(int argc, char *argv[]) {
 
     // the main loop
     while(!stop) {
+        FD_ZERO(&read_fd);
+        FD_SET(STDIN_FILENO, &read_fd);
+
+        if (select(STDIN_FILENO + 1, &read_fd, NULL, NULL, &timeout) > 0) {
+            char s;
+            read(STDIN_FILENO, &s, 1);
+            s -= 48;
+
+            if (s >= STANDBY && s < RETURN + 1) {
+                state_in = s;
+                printf("State changed to: %d\n", s);
+                continue;
+            }
+
+            printf("State input not recognized\n");
+        }
+
         if (new_data) {
             gettimeofday(&tstart, NULL);
             // pulling sample from camera and print bus error message, the only gstream functions used in a loop
@@ -287,7 +321,7 @@ int main(int argc, char *argv[]) {
             }
 
             // transmit the pose through the UART bus
-            ec = transmit_pose(&uart_info, p, q);
+            ec = transmit_pose(&uart_info, &tstop, p, q, state_in);
             if (ec) {
                 printf("Pose transmission returned error code: %d\n", ec);
             }
@@ -301,6 +335,7 @@ int main(int argc, char *argv[]) {
             // reset new data flag
             new_data = 0;
         }
+
     }
 
     printf("Exiting main loop...\n");
@@ -323,6 +358,8 @@ int main(int argc, char *argv[]) {
     camera.reset();
     cm->stop();
     delete cm.get();
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 
     exit(0);
 }
